@@ -46,14 +46,15 @@ GIGA_SITES = [
     ("seasons", "Seasons", "Seasons", "https://comic-seasons.com", "#66A80F"),
     ("ichijin", "一迅プラス", "一迅プラス", "https://ichicomi.com", "#1971C2"),
     ("yours", "COMIC Y-OURS", "Y-OURS", "https://comic-y-ours.com", "#E64980"),
-    ("morningtwo", "モーニング・ツー", "モーニング・ツー", "https://morningtwo.com", "#1098AD"),
-    ("getsuma", "月マガ基地", "月マガ基地", "https://getsumagakichi.com", "#C92A2A"),
-    ("sirius", "ビブリオシリウス", "シリウス", "https://bibliosirius.com", "#3B5BDB"),
-    ("andsofa", "&Sofa", "&Sofa", "https://andsofa.com", "#A61E4D"),
     ("mtsquare", "まんがタイムSquare", "タイムSquare", "https://mangatime-square.com", "#F59F00"),
     ("ourfeel", "OUR FEEL", "OUR FEEL", "https://ourfeel.jp", "#9C36B5"),
 ]
-SITE_META = {k: {"name": n, "short": s, "url": u, "color": c} for k, n, s, u, c in GIGA_SITES}
+# GigaViewer以外のサイト（サイトごとに専用の読み取りを用意）
+OTHER_SITES = [
+    ("kadocomi", "カドコミ", "カドコミ", "https://comic-walker.com", "#F76707"),
+    ("gangan", "ガンガンONLINE", "ガンガン", "https://www.ganganonline.com", "#E03131"),
+]
+SITE_META = {k: {"name": n, "short": s, "url": u, "color": c} for k, n, s, u, c in GIGA_SITES + OTHER_SITES}
 
 SOURCES = [{"key": k, "name": n, "type": "giga_rss", "base": u} for k, n, s, u, c in GIGA_SITES]
 # 「あとから無料になった話」がRSSに出にくいサイト。トップページに載った作品の
@@ -63,6 +64,9 @@ MAX_SERIES = 25      # 1サイトあたりに調べる作品数の上限
 FREE_LOOKBACK_DAYS = 7
 for k in ATOM_SITES:
     SOURCES.append({"key": k, "name": SITE_META[k]["name"] + "（無料化分）", "type": "giga_atom", "base": SITE_META[k]["url"]})
+
+SOURCES.append({"key": "kadocomi", "name": "カドコミ", "type": "kadocomi", "base": "https://comic-walker.com"})
+SOURCES.append({"key": "gangan", "name": "ガンガンONLINE", "type": "gangan", "base": "https://www.ganganonline.com"})
 
 # コミックガルドは無料公開分がRSSに出ないため、トップページからも取得する
 SOURCES.insert(5, {"key": "gardo", "name": "コミックガルド（無料公開分）", "type": "gardo_top", "base": "https://comic-gardo.com"})
@@ -143,18 +147,84 @@ def parse_gardo_top(html: str, now: datetime) -> list[dict]:
     return items
 
 
+# ---------- カドコミ・ガンガンONLINE（ページ内のデータを読む） ----------
+NEXT_DATA_RE = re.compile(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', re.S)
+
+
+def next_data(html: str) -> dict:
+    m = NEXT_DATA_RE.search(html)
+    if not m:
+        raise ValueError("ページ内のデータが見つかりません（サイトの構造が変わった可能性）")
+    return json.loads(m.group(1))
+
+
+def parse_kadocomi_new(html: str) -> list[dict]:
+    """カドコミの「新着作品」ページ（/new）。直近数日分の更新が載っている。"""
+    nd = next_data(html)
+    items = []
+    for q in nd["props"]["pageProps"]["dehydratedState"]["queries"]:
+        key = q.get("queryKey") or []
+        if not (key and isinstance(key[0], list) and key[0][0] == "/api/series/new"):
+            continue
+        for s in q["state"]["data"]["result"]:
+            ep = s.get("episode") or {}
+            if not ep.get("code"):
+                continue
+            date = datetime.fromisoformat(s["latestUpdateDate"].replace("Z", "+00:00"))
+            items.append(dict(site="kadocomi", series=s.get("title", ""), ep=ep.get("title", ""),
+                              author="/".join(a["name"] for a in s.get("authors", [])),
+                              url=f"https://comic-walker.com/detail/{s['code']}/episodes/{ep['code']}",
+                              date=date.astimezone(JST).isoformat(), free=True, img=s.get("thumbnail", "")))
+    return items
+
+
+def parse_gangan_top(html: str) -> list[dict]:
+    """ガンガンONLINEのトップページ「今日の更新作品」。"""
+    nd = next_data(html)
+    base = "https://www.ganganonline.com"
+    items = []
+    for sec in nd["props"]["pageProps"]["data"]["sections"]:
+        ts = sec.get("titleSection")
+        if not ts or "更新" not in (ts.get("header") or ""):
+            continue
+        for x in ts.get("titles", []):
+            m = re.search(r"(\d{4})\.(\d{2})\.(\d{2})", x.get("updated", ""))
+            if not m or not x.get("chapterId"):
+                continue
+            date = datetime(int(m[1]), int(m[2]), int(m[3]), tzinfo=JST)
+            img = x.get("imageUrl", "")
+            items.append(dict(site="gangan", series=x.get("header", ""), ep="最新話", author="",
+                              url=f"{base}/title/{x['titleId']}/chapter/{x['chapterId']}",
+                              date=date.isoformat(), free=True, img=(base + img) if img.startswith("/") else img))
+    return items
+
+
 # ---------- 作品別フィード（無料化した話を拾う） ----------
 ATOM_NS = "{http://www.w3.org/2005/Atom}"
 SERIES_ID_RE = re.compile(r"series-[a-z-]*thumbnail[a-z-]*(?:/|%2F)(\d{10,})-")
 
 
 def series_ids_from_top(html: str) -> list[str]:
-    """トップページの「最新の更新」欄に載っている作品のIDを集める。"""
+    """トップページの「最新の更新」欄に載っている作品のIDを集める。
+
+    サイトごとにデザインが違うため、よくある形を順に探し、見つからなければ
+    ページ全体から（上に載っている順に）作品IDを拾う。
+    """
     soup = BeautifulSoup(html, "html.parser")
     ids: list[str] = []
-    for box in soup.select('div.latest-update, div[class*="weekly_update_container"]'):
-        ids += [li["data-test-id"] for li in box.select("li[data-test-id]")]
-        ids += SERIES_ID_RE.findall(str(box))
+    selectors = [
+        'div.latest-update li[data-test-id]',          # くらげバンチなど（旧デザイン）
+        'li[class*="UpdateSeriesItem"]',               # webアクションなど（新デザイン）
+        'div[class*="weekly_update_container"] li',    # コミックガルド
+        'div[class*="LatestUpdate"] li',
+    ]
+    for sel in selectors:
+        for el in soup.select(sel):
+            if el.get("data-test-id", "").isdigit():
+                ids.append(el["data-test-id"])
+            ids += SERIES_ID_RE.findall(str(el))
+    if not ids:  # どの形にも当てはまらないときの予備
+        ids = SERIES_ID_RE.findall(html)
     return list(dict.fromkeys(ids))[:MAX_SERIES]
 
 
@@ -216,6 +286,10 @@ def collect(now: datetime, fetch=get):
                 health.append(h)
                 time.sleep(1)
                 continue
+            elif src["type"] == "kadocomi":
+                items = parse_kadocomi_new(fetch(src["base"] + "/new"))
+            elif src["type"] == "gangan":
+                items = parse_gangan_top(fetch(src["base"] + "/"))
             else:
                 items = parse_gardo_top(fetch(src["base"] + "/"), now)
             h["count"] = len(items)

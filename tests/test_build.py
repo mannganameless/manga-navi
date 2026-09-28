@@ -23,6 +23,10 @@ def fake_fetch(url):
         return (FX / "kurage_top.html").read_text()
     if url == "https://kuragebunch.com/atom/series/12207421983749476406":
         return (FX / "kurage_atom.xml").read_text()
+    if url == "https://comic-walker.com/new":
+        return (FX / "kadocomi_new.html").read_text()
+    if url == "https://www.ganganonline.com/":
+        return (FX / "gangan_top.html").read_text()
     raise RuntimeError("接続エラー（テスト）")
 
 
@@ -60,6 +64,19 @@ hk = next(h for h in health if h["name"] == "くらげバンチ（無料化分�
 assert hk["status"] == "ok" and hk["count"] == 1 and "2作品" in hk["message"], hk
 hz = next(h for h in health if h["name"] == "ゼノン編集部（無料化分）")
 assert hz["status"] == "error"
+
+# カドコミ・ガンガンONLINE
+k = by["https://comic-walker.com/detail/KC_020669_S/episodes/KC_0206690000200011_E"]
+assert k["free"] and k["ep"] == "第1話前編" and k["date"].startswith("2026-09-28T11:00") and k["author"] == "ナツマサキ"
+g = by["https://www.ganganonline.com/title/2391/chapter/129246"]
+assert g["free"] and g["date"].startswith("2026-09-28T00:00") and g["img"].startswith("https://www.ganganonline.com/secure/")
+assert next(h for h in health if h["name"] == "ガンガンONLINE")["status"] == "ok"
+
+# 新デザイン・予備の読み取り
+new_design = '<ul><li class="UpdateSeriesItem_item_wrapper__w6pxS"><img src="https://x/https%3A%2F%2Fcdn-img.comic-action.com%2Fpublic%2Fseries-thumbnail%2F4855956445099488439-1ffe%3F1"></li></ul>'
+assert build.series_ids_from_top(new_design) == ["4855956445099488439"]
+fallback = '<div><img src="https://cdn-img.example.com/public/series-thumbnail/1234567890123-abc"></div>'
+assert build.series_ids_from_top(fallback) == ["1234567890123"]
 
 build.render(items, health, NOW)
 html = (build.ROOT / "site" / "index.html").read_text()
