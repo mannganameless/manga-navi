@@ -48,6 +48,9 @@ def survey_one(name, candidates):
             "episode_links": len(set(re.findall(r'href="([^"]*(?:episode|chapter|story|viewer|comic/)[^"]*)"', html))),
             "update_word": len(re.findall(r"更新", html)),
             "free_word": len(re.findall(r"無料", html)),
+            "comici": html.count("comici"),
+            "home_updated": "home-updated" in html,
+            "series_links": len(set(re.findall(r'href="(/series/[^"#?]+)"', html))),
             "app_only_hint": bool(re.search(r"アプリ(限定|のみ|で読む)", html)),
         }
         r["feed_links"] = re.findall(r'type="application/(?:rss|atom)\+xml"[^>]*href="([^"]+)"', html)[:3]

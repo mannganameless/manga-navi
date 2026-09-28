@@ -70,6 +70,9 @@ COMICI_SITES = [
     ("takecomic", "竹コミ！", "竹コミ", "https://takecomic.jp", "#5C940D"),
     ("heros", "HERO'S Web（コミプレ）", "ヒーローズ", "https://heros-web.com", "#364FC7"),
     ("growl", "コミックグロウル", "グロウル", "https://comic-growl.com", "#C92A2A"),
+    ("hanayume", "花とゆめ＋", "花ゆめ＋", "https://hanayume.com", "#F06595"),
+    ("mangalt", "マンガルト（トーチ・リイドカフェ等）", "マンガルト", "https://mangalt.jp", "#845EF7"),
+    ("magkan", "MAGKAN", "マグカン", "https://kansai.mag-garden.co.jp", "#20C997"),
 ]
 # RSSを配信しているサイト (キー, 名前, 短い名前, URL, 色, フィードのパス)
 RSS_SITES = [
