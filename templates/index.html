@@ -1,120 +1,210 @@
-<title>マンガ更新ナビ</title>
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>マンガ更新ナビ｜公式Web漫画の無料更新まとめ</title>
+<meta name="description" content="少年ジャンプ＋、コミックガルド、コミックアース・スター、コミックDAYSの最新話と無料公開を1ページで確認できます。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
 <style>
 :root{
-  --bg:#F4F5F8; --surface:#FFFFFF; --ink:#15171C; --muted:#5D6371; --line:#DCDFE6;
-  --accent:#2743D6; --accent-ink:#FFFFFF; --soft:#E9ECF7;
-  --ok:#2B8A3E; --warn:#A8620A; --warn-bg:#FFF3DF; --free:#1E7B34; --free-bg:#E1F3E5; --paid:#8A5A00; --paid-bg:#FBEFD6;
+  --bg:#F2F3F6; --surface:#FFFFFF; --surface2:#F7F8FA; --ink:#14161B; --muted:#5F6573; --line:#DCDFE6;
+  --accent:#2B4CE0; --accent-ink:#FFFFFF; --soft:#E7EBFB;
+  --new:#D6336C; --new-ink:#FFFFFF;
+  --free:#1D7A33; --free-bg:#DFF2E4; --paid:#8A5700; --paid-bg:#FBEBCB;
+  --warn:#A8620A; --warn-bg:#FFF3DF; --ok:#2B8A3E; --star:#F0A500;
   --jump:#E8590C; --days:#1C7ED6; --gardo:#C2255C; --earthstar:#5C940D;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#111318; --surface:#1A1D24; --ink:#ECEEF3; --muted:#9AA1AF; --line:#2C3140;
-  --accent:#7D92FF; --accent-ink:#0E1330; --soft:#232A45;
-  --ok:#69DB7C; --warn:#F2B35A; --warn-bg:#33270F; --free:#69DB7C; --free-bg:#1C3322; --paid:#F2B35A; --paid-bg:#33270F;
+  --bg:#101216; --surface:#191C22; --surface2:#1F232A; --ink:#ECEEF3; --muted:#9BA2B0; --line:#2C313C;
+  --accent:#8193FF; --accent-ink:#0D1233; --soft:#232A45;
+  --new:#FF6B9A; --new-ink:#2A0714;
+  --free:#6BDB80; --free-bg:#1B3322; --paid:#F4B860; --paid-bg:#34270E;
+  --warn:#F2B35A; --warn-bg:#33270F; --ok:#69DB7C; --star:#FFC940;
   --jump:#FF8A4C; --days:#5AAEFF; --gardo:#F06595; --earthstar:#94D82D;
   color-scheme:dark;}}
 :root[data-theme="dark"]{
-  --bg:#111318; --surface:#1A1D24; --ink:#ECEEF3; --muted:#9AA1AF; --line:#2C3140;
-  --accent:#7D92FF; --accent-ink:#0E1330; --soft:#232A45;
-  --ok:#69DB7C; --warn:#F2B35A; --warn-bg:#33270F; --free:#69DB7C; --free-bg:#1C3322; --paid:#F2B35A; --paid-bg:#33270F;
+  --bg:#101216; --surface:#191C22; --surface2:#1F232A; --ink:#ECEEF3; --muted:#9BA2B0; --line:#2C313C;
+  --accent:#8193FF; --accent-ink:#0D1233; --soft:#232A45;
+  --new:#FF6B9A; --new-ink:#2A0714;
+  --free:#6BDB80; --free-bg:#1B3322; --paid:#F4B860; --paid-bg:#34270E;
+  --warn:#F2B35A; --warn-bg:#33270F; --ok:#69DB7C; --star:#FFC940;
   --jump:#FF8A4C; --days:#5AAEFF; --gardo:#F06595; --earthstar:#94D82D;
   color-scheme:dark;}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;font-size:15px;line-height:1.6;padding-inline:16px;padding-block:0 48px}
-.wrap{max-width:1080px;margin:0 auto}
-header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 16px;padding-block:28px 18px}
-.logo{font-family:"Dela Gothic One","Zen Kaku Gothic New",sans-serif;font-size:30px;line-height:1.1;letter-spacing:.02em;margin:0}
-.logo span{color:var(--accent)}
-.meta{color:var(--muted);font-size:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.proto{border:1px solid var(--line);border-radius:4px;padding:1px 8px;font-size:12px;letter-spacing:.05em}
-details.status-box{margin-bottom:16px}
-details.status-box summary{cursor:pointer;color:var(--muted);font-size:13px;font-weight:700;letter-spacing:.06em}
-.status{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;margin-top:10px}
-.st{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:center}
-.st .dot{width:10px;height:10px;border-radius:50%}
-.st b{font-size:14px}
-.st small{grid-column:2;color:var(--muted);font-size:12px;line-height:1.5}
-.st.warn{border-color:var(--warn);background:var(--warn-bg)}
-.st.warn small{color:var(--warn)}
-.pill{font-size:11px;font-weight:700;border-radius:999px;padding:0 8px;margin-left:6px;vertical-align:1px}
-.pill.ok{color:var(--ok);border:1px solid currentColor}
-.pill.warn{color:var(--warn);border:1px solid currentColor}
-.pill.off{color:var(--muted);border:1px solid var(--line)}
-.controls{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:10px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line)}
-.mode{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px;align-self:flex-start;flex-wrap:wrap}
-.mode button{font:inherit;font-size:14px;font-weight:700;border:0;border-radius:7px;padding:6px 14px;background:none;color:var(--muted);cursor:pointer}
-.mode button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-.mode .count{font-weight:500;font-size:12px;margin-left:4px;opacity:.8}
-.row2{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.search{flex:1 1 220px;font:inherit;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
-.search:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{font:inherit;font-size:13px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 12px;display:inline-flex;align-items:center;gap:6px}
-.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.chip .dot{width:8px;height:8px;border-radius:50%}
-.day{margin-top:26px}
-.day h3{font-size:17px;margin:0 0 10px;display:flex;align-items:baseline;gap:10px}
-.day h3 .n{font-size:12px;color:var(--muted);font-weight:500}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
-.card{position:relative;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .15s,border-color .15s}
-.card:hover{transform:translateY(-2px);border-color:var(--accent)}
-.card.paid{opacity:.82}
-.thumb{position:relative;aspect-ratio:16/10;max-width:100%;display:flex;align-items:flex-end;padding:10px;color:#fff;overflow:hidden}
-.thumb::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.28) 1px,transparent 1.4px);background-size:7px 7px}
-.thumb .ttl{position:relative;font-weight:700;font-size:15px;line-height:1.35;text-shadow:0 1px 2px rgba(0,0,0,.35);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
-.thumb .ph{position:absolute;top:8px;left:8px;font-size:10px;letter-spacing:.06em;background:rgba(0,0,0,.35);border-radius:3px;padding:0 5px}
-.badge{position:absolute;z-index:2;top:8px;right:8px;font-size:12px;font-weight:700;border-radius:4px;padding:1px 7px}
-.badge.free{background:var(--free-bg);color:var(--free)}
-.badge.paid{background:var(--paid-bg);color:var(--paid)}
-.body{padding:9px 11px 11px;display:flex;flex-direction:column;gap:3px;flex:1}
-.series{font-weight:700;font-size:14px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.ep{font-size:13px;color:var(--ink);overflow-wrap:anywhere}
-.more{font-size:11px;color:var(--accent);background:var(--soft);border-radius:4px;padding:0 6px;align-self:flex-start}
-.foot{margin-top:auto;padding-top:4px;display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
-.site{display:inline-flex;align-items:center;gap:4px;min-width:0}
-.site .dot{width:7px;height:7px;border-radius:50%;flex:none}
-.time{font-variant-numeric:tabular-nums}
-.fav{position:absolute;z-index:3;right:8px;top:38px;height:30px;width:30px;border:0;border-radius:50%;background:rgba(0,0,0,.35);cursor:pointer;font-size:16px;line-height:1;color:rgba(255,255,255,.85)}
-.fav[aria-pressed="true"]{color:#FFD43B;background:rgba(0,0,0,.55)}
-.empty{padding:28px;text-align:center;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:10px;margin-top:22px}
-.note{margin-top:14px;font-size:13px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
-footer{margin-top:36px;color:var(--muted);font-size:12px;line-height:1.7}
-@media (max-width:480px){.logo{font-size:24px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.thumb .ttl{font-size:13px}}
-@media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
-</style>
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;font-size:15px;line-height:1.6;padding-inline:16px;padding-block:0 56px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto}
 
+/* ヘッダー */
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;padding-block:22px 14px}
+.logo{font-family:"Dela Gothic One","Zen Kaku Gothic New",sans-serif;font-size:28px;line-height:1.1;margin:0;letter-spacing:.02em}
+.logo b{color:var(--accent);font-weight:400}
+.hmeta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+.view{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.view button{border:0;background:none;padding:5px 12px;cursor:pointer;font-size:13px;display:inline-flex;gap:5px;align-items:center}
+.view button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.view svg{width:14px;height:14px}
+.trial{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:8px;padding:6px 10px;margin-bottom:12px}
+.trial button{border:1px solid var(--line);background:var(--surface2);border-radius:6px;padding:2px 10px;cursor:pointer}
+.trial button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);font-weight:700}
+
+/* 今日のまとめ */
+.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.sum{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;cursor:pointer;text-align:left}
+.sum[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.sum .k{font-size:12px;color:var(--muted)}
+.sum .v{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
+.sum .v small{font-size:13px;font-weight:500;color:var(--muted);margin-left:2px}
+.sum.new .v{color:var(--new)}
+.sum.fav .v{color:var(--star)}
+
+/* 操作バー */
+.bar{position:sticky;top:0;z-index:20;background:var(--bg);padding-block:8px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line);margin-inline:-2px;padding-inline:2px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:0;background:none;padding:8px 12px 9px;cursor:pointer;font-size:14px;font-weight:700;color:var(--muted);border-bottom:3px solid transparent;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.tab .dot{width:8px;height:8px;border-radius:50%}
+.tab .c{font-size:11px;font-weight:500;background:var(--surface2);border-radius:999px;padding:0 6px;color:var(--muted)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:2px;gap:2px}
+.seg button{border:0;background:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg.days button{padding:4px 9px}
+.search{flex:1 1 180px;min-width:0;font:inherit;font-size:14px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.tog{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-size:13px;cursor:pointer;white-space:nowrap}
+.tog[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* セクション */
+.dayh{margin:26px 0 4px;font-size:19px;display:flex;align-items:baseline;gap:10px}
+.dayh .n{font-size:12px;color:var(--muted);font-weight:500}
+.slot{margin-top:12px}
+.sloth{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px;color:var(--muted)}
+.sloth .t{font-size:15px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:0 8px}
+.sloth .sites{display:inline-flex;gap:8px;flex-wrap:wrap}
+.sloth .rule{flex:1;height:1px;background:var(--line)}
+.pinned{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.pinned h2{margin:0 0 10px;font-size:15px;display:flex;gap:8px;align-items:center}
+.pinned h2 .s{color:var(--star)}
+
+/* 共通バッジ */
+.site{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.site .dot{width:7px;height:7px;border-radius:50%;flex:none}
+.b{display:inline-block;font-size:11px;font-weight:700;border-radius:4px;padding:0 6px;line-height:1.7;white-space:nowrap}
+.b.free{background:var(--free-bg);color:var(--free)}
+.b.paid{background:var(--paid-bg);color:var(--paid)}
+.b.new{background:var(--new);color:var(--new-ink)}
+.more{font-size:11px;color:var(--accent);background:var(--soft);border-radius:4px;padding:0 6px}
+.ic{border:0;background:none;cursor:pointer;padding:0;display:inline-grid;place-items:center;border-radius:50%}
+.ic svg{width:18px;height:18px}
+.ic.star{color:var(--line)} .ic.star[aria-pressed="true"]{color:var(--star)}
+.ic.read{color:var(--muted)} .ic.read[aria-pressed="true"]{color:var(--free)}
+
+/* カード表示 */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:14px}
+.card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.card:hover{border-color:var(--accent)}
+.card a.cover{display:block;position:relative;aspect-ratio:16/10;max-width:100%;overflow:hidden;background:var(--surface2)}
+.card a.cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.card a.cover .fb{position:absolute;inset:0;display:flex;align-items:flex-end;padding:10px;color:#fff;font-weight:700;font-size:14px;line-height:1.35}
+.card .tl{position:absolute;top:7px;left:7px;display:flex;gap:4px;z-index:2}
+.card .tr{position:absolute;top:6px;right:6px;display:flex;gap:4px;z-index:2}
+.card .tr .ic{width:30px;height:30px;background:rgba(0,0,0,.45)}
+.card .tr .ic.star{color:rgba(255,255,255,.8)} .card .tr .ic.star[aria-pressed="true"]{color:#FFC940}
+.card .tr .ic.read{color:rgba(255,255,255,.8)} .card .tr .ic.read[aria-pressed="true"]{color:#6BDB80}
+.card .body{padding:8px 10px 10px;display:flex;flex-direction:column;gap:2px;flex:1}
+.card .series{font-weight:700;font-size:14px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:inherit;text-decoration:none}
+.card .ep{font-size:13px;overflow-wrap:anywhere}
+.card .foot{margin-top:auto;padding-top:4px;display:flex;justify-content:space-between;gap:6px;font-size:11px;color:var(--muted)}
+.card.isread{opacity:.5}
+.card.isread:hover{opacity:.85}
+
+/* リスト表示 */
+.list{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.li{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:8px 10px;border-top:1px solid var(--line)}
+.li:first-child{border-top:0}
+.li a.th{display:block;position:relative;aspect-ratio:16/10;max-width:100%;border-radius:6px;overflow:hidden;background:var(--surface2)}
+.li a.th img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.li .main{min-width:0;display:flex;flex-direction:column;gap:1px}
+.li .t1{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.li .series{font-weight:700;font-size:15px;color:inherit;text-decoration:none;overflow-wrap:anywhere}
+.li .series:hover{color:var(--accent)}
+.li .ep{font-size:13px}
+.li .meta{font-size:12px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+.li .act{display:flex;gap:10px;align-items:center}
+.li .act .ic{width:34px;height:34px;background:var(--surface2)}
+.li.isread{opacity:.5}
+
+.empty{padding:32px 16px;text-align:center;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:10px;margin-top:20px}
+.hint{font-size:13px;color:var(--muted);margin-top:10px}
+details.st{margin-top:32px;font-size:13px;color:var(--muted)}
+details.st summary{cursor:pointer;font-weight:700}
+.stgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;margin-top:8px}
+.stc{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+.stc.bad{border-color:var(--warn);background:var(--warn-bg);color:var(--warn)}
+footer{margin-top:24px;color:var(--muted);font-size:12px;line-height:1.8}
+
+@media (max-width:640px){
+  .logo{font-size:22px}
+  .summary{gap:6px}.sum{padding:8px 10px}.sum .v{font-size:20px}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .li{grid-template-columns:76px minmax(0,1fr);padding:8px}
+  .li .act{grid-column:2;justify-content:flex-start}
+  .li .act .ic{width:32px;height:32px}
+  .li .series{font-size:14px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
 <div class="wrap">
   <header>
-    <h1 class="logo">マンガ<span>更新</span>ナビ</h1>
-    <div class="meta"><span id="gen"></span></div>
+    <h1 class="logo" id="logo"></h1>
+    <div class="hmeta">
+      <span id="gen"></span>
+      <div class="view" role="group" aria-label="表示の形">
+        <button type="button" id="vCard" aria-pressed="false"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>カード</button>
+        <button type="button" id="vList" aria-pressed="false"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="2" width="4" height="3" rx="1"/><rect x="7" y="2.5" width="8" height="2" rx="1"/><rect x="1" y="6.5" width="4" height="3" rx="1"/><rect x="7" y="7" width="8" height="2" rx="1"/><rect x="1" y="11" width="4" height="3" rx="1"/><rect x="7" y="11.5" width="8" height="2" rx="1"/></svg>リスト</button>
+      </div>
+    </div>
   </header>
 
-  <details class="status-box" id="statusBox">
-    <summary>取得元の状態</summary>
-    <div class="status" id="status"></div>
-  </details>
+  <div class="trial" id="trial"><span>サイト名のお試し：</span></div>
 
-  <div class="controls">
-    <div class="mode" role="group" aria-label="表示する話">
-      <button type="button" id="mFree" aria-pressed="true">無料で読める更新<span class="count" id="cFree"></span></button>
-      <button type="button" id="mPaid" aria-pressed="false">先読み（有料）<span class="count" id="cPaid"></span></button>
-      <button type="button" id="mAll" aria-pressed="false">すべて</button>
-    </div>
-    <div class="row2">
-      <input id="q" class="search" type="search" placeholder="作品名・作者名で絞り込み" aria-label="作品名・作者名で絞り込み">
-      <div class="chips" id="chips"></div>
+  <div class="summary">
+    <button type="button" class="sum new" id="sNew" aria-pressed="false"><span class="k">前回から増えた更新</span><span class="v" id="nNew">0</span></button>
+    <button type="button" class="sum fav" id="sFav" aria-pressed="false"><span class="k">★お気に入りの更新</span><span class="v" id="nFav">0</span></button>
+    <button type="button" class="sum" id="sUnread" aria-pressed="false"><span class="k">今日の無料・未読</span><span class="v" id="nUnread">0</span></button>
+  </div>
+
+  <div class="bar">
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="row">
+      <div class="seg" id="mode" role="group" aria-label="無料・有料">
+        <button type="button" data-v="free" aria-pressed="true">無料</button>
+        <button type="button" data-v="paid" aria-pressed="false">先読み（有料）</button>
+        <button type="button" data-v="all" aria-pressed="false">すべて</button>
+      </div>
+      <div class="seg days" id="wday" role="group" aria-label="曜日"></div>
+      <input id="q" class="search" type="search" placeholder="作品名・作者で探す" aria-label="作品名・作者で探す">
+      <button type="button" class="tog" id="hideRead" aria-pressed="false">既読を隠す</button>
     </div>
   </div>
 
+  <div id="pin"></div>
   <main id="out"></main>
 
+  <details class="st" id="stBox"><summary>取得元の状態</summary><div class="stgrid" id="stGrid"></div></details>
   <footer>
-    このサイトは各公式サイトの更新情報（作品名・話数・公開日時）をまとめ、公式ページへ案内するものです。漫画本編は掲載していません。サムネイル画像は各公式サイトの配信画像を表示しています。<br>
-    「無料」「先読み・有料」は、各サイトの公式RSSの無料期間情報と、コミックガルドはトップページの曜日別欄から判定しています。実際の料金は各公式サイトでご確認ください。
+    各公式サイトの更新情報（作品名・話数・公開日時）をまとめ、公式ページへ案内するサイトです。漫画本編は掲載していません。サムネイルは各公式サイトの配信画像を表示しています。<br>
+    「無料」「先読み（有料）」は公式RSSの無料期間情報と、コミックガルドはトップページの曜日別欄から判定しています。実際の料金は各公式サイトでご確認ください。<br>
+    お気に入り・既読・前回の訪問日時は、お使いのブラウザにだけ保存されます。
   </footer>
 </div>
 
@@ -122,97 +212,157 @@ footer{margin-top:36px;color:var(--muted);font-size:12px;line-height:1.7}
 const PAYLOAD = __PAYLOAD__;
 const DATA = PAYLOAD.items;
 const NOW = new Date(PAYLOAD.generated);
+
+// ===== 設定 =====
+const NAMES = [["マンガ","更新","ナビ"],["きょうのマンガ","更新",""],["マンガ","更新","君"]];
+const SHOW_TRIAL = true; // サイト名が決まったら false にする
 const SITES = {
-  jump:{name:"少年ジャンプ＋",color:"var(--jump)",hex:["#E8590C","#C2410C"],src:"公式RSS（無料期間情報つき）"},
-  gardo:{name:"コミックガルド",color:"var(--gardo)",hex:["#C2255C","#9C1C49"],src:"トップページ（無料）＋RSS（先読み）・毎日12時更新"},
-  earthstar:{name:"コミックアース・スター",color:"var(--earthstar)",hex:["#5C940D","#3F6B06"],src:"公式RSS（無料期間情報つき）"},
-  days:{name:"コミックDAYS",color:"var(--days)",hex:["#1C7ED6","#1561A8"],src:"公式RSS"}
+  jump:{name:"少年ジャンプ＋",short:"ジャンプ＋",color:"var(--jump)",g:["#E8590C","#B8430A"]},
+  gardo:{name:"コミックガルド",short:"ガルド",color:"var(--gardo)",g:["#C2255C","#8F1B44"]},
+  earthstar:{name:"コミックアース・スター",short:"アース・スター",color:"var(--earthstar)",g:["#5C940D","#3E6A07"]},
+  days:{name:"コミックDAYS",short:"DAYS",color:"var(--days)",g:["#1C7ED6","#135FA3"]}
 };
-const PENDING = [
-  {name:"カドコミ",note:"公式RSSなし。ページ取得で対応予定"},
-  {name:"アルファポリス",note:"規約の確認待ちのため保留中"}
-];
-const WD="日月火水木金土", pad=n=>String(n).padStart(2,"0");
-const jst=iso=>new Date(new Date(iso).getTime()+9*3600e3);
-const dayKey=iso=>{const d=jst(iso);return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`;};
-const hm=iso=>{const d=jst(iso);return `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;};
-const md=iso=>{const d=jst(iso);return `${d.getUTCMonth()+1}/${d.getUTCDate()}`;};
-function dayLabel(key){
-  const [y,m,d]=key.split("-").map(Number), t=Date.UTC(y,m-1,d), n=jst(NOW.toISOString());
-  const diff=Math.round((Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate())-t)/864e5);
-  const base=`${m}/${d}（${WD[new Date(t).getUTCDay()]}）`;
-  return diff===0?`今日 ${base}`:diff===1?`昨日 ${base}`:diff<7?`${diff}日前 ${base}`:base;
-}
-const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-let favs=new Set();
-try{favs=new Set(JSON.parse(localStorage.getItem("favs")||"[]"));}catch(e){}
-const saveFavs=()=>{try{localStorage.setItem("favs",JSON.stringify([...favs]));}catch(e){}};
-const state={mode:"free",site:"all",fav:false,q:""};
+// ===== 保存（ブラウザ内のみ） =====
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+let favs=new Set(store.get("favs",[])), reads=new Set(store.get("reads",[]));
+// 前回の訪問：このタブを開いている間は同じ基準を使う
+let prevVisit=null;
+try{prevVisit=sessionStorage.getItem("prevVisit");}catch(e){}
+if(!prevVisit){prevVisit=store.get("lastVisit",null);try{sessionStorage.setItem("prevVisit",prevVisit||"");}catch(e){}}
+store.set("lastVisit",new Date().toISOString());
+const prevT=prevVisit?new Date(prevVisit).getTime():null;
 
-document.getElementById("cFree").textContent=DATA.filter(r=>r.free).length+"件";
-document.getElementById("cPaid").textContent=DATA.filter(r=>!r.free).length+"件";
+// ===== 日付ヘルパー（日本時間） =====
+const WD="日月火水木金土",pad=n=>String(n).padStart(2,"0");
+const J=iso=>new Date(new Date(iso).getTime()+9*3600e3);
+const dayKey=iso=>{const d=J(iso);return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`;};
+const hm=iso=>{const d=J(iso);return `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;};
+const wdOf=iso=>J(iso).getUTCDay();
+const todayKey=dayKey(NOW.toISOString());
+function dayLabel(k){const[y,m,d]=k.split("-").map(Number),t=Date.UTC(y,m-1,d),n=J(NOW.toISOString());
+  const diff=Math.round((Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate())-t)/864e5),b=`${m}/${d}（${WD[new Date(t).getUTCDay()]}）`;
+  return diff===0?`今日 ${b}`:diff===1?`昨日 ${b}`:diff<7?`${diff}日前 ${b}`:b;}
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const isNew=r=>prevT!==null&&new Date(r.date).getTime()>prevT;
 
-(function(){
-  const box=document.getElementById("status"); let bad=0;
-  const seen=new Set();
-  for(const h of PAYLOAD.health){
-    const s=SITES[h.key]; const warn=h.status!=="ok"; if(warn) bad++;
-    const el=document.createElement("div"); el.className="st"+(warn?" warn":"");
-    el.innerHTML=`<span class="dot" style="background:${s.color}"></span><b>${esc(h.name)}<span class="pill ${warn?"warn":"ok"}">${warn?"要確認":"正常"}</span></b>
-      <small>${warn?esc(h.message):`${h.count}件取得・最新 ${md(h.latest)} ${hm(h.latest)}`}</small>`;
-    box.appendChild(el);
-  }
-  for(const p of PENDING){const el=document.createElement("div");el.className="st";
-    el.innerHTML=`<span class="dot" style="background:var(--line)"></span><b>${p.name}<span class="pill off">準備中</span></b><small>${p.note}</small>`;box.appendChild(el);}
-  if(bad) document.querySelector("#statusBox summary").textContent=`取得元の状態（${bad}件 要確認）`;
-  const g=jst(PAYLOAD.generated); document.getElementById("gen").textContent=`最終更新 ${g.getUTCMonth()+1}/${g.getUTCDate()} ${pad(g.getUTCHours())}:${pad(g.getUTCMinutes())}`;
-})();
+// ===== 状態 =====
+const narrow=matchMedia("(max-width:640px)").matches;
+const state={site:"all",mode:"free",wd:"all",q:"",hideRead:false,only:null,view:store.get("view",narrow?"list":"card")};
 
-(function(){
-  const modes={free:"mFree",paid:"mPaid",all:"mAll"};
-  for(const [m,id] of Object.entries(modes)) document.getElementById(id).onclick=()=>{state.mode=m;for(const [mm,ii] of Object.entries(modes))document.getElementById(ii).setAttribute("aria-pressed",mm===m);render();};
-  const c=document.getElementById("chips"), siteBtns=[];
-  const mk=(label,pressed,on,dot)=>{const b=document.createElement("button");b.type="button";b.className="chip";b.setAttribute("aria-pressed",pressed);b.innerHTML=(dot?`<span class="dot" style="background:${dot}"></span>`:"")+label;b.onclick=()=>on(b);c.appendChild(b);return b;};
-  const setSite=k=>{state.site=k;siteBtns.forEach(([kk,b])=>b.setAttribute("aria-pressed",kk===k));render();};
-  siteBtns.push(["all",mk("全サイト",true,()=>setSite("all"))]);
-  for(const [k,s] of Object.entries(SITES)) siteBtns.push([k,mk(s.name,false,()=>setSite(k),s.color)]);
-  mk("★ お気に入り",false,b=>{state.fav=!state.fav;b.setAttribute("aria-pressed",state.fav);render();});
-  document.getElementById("q").addEventListener("input",e=>{state.q=e.target.value.trim().toLowerCase();render();});
-})();
+// ===== サイト名 =====
+function setName(i){const[a,b,c]=NAMES[i];document.getElementById("logo").innerHTML=`${a}<b>${b}</b>${c}`;
+  document.title=`${a}${b}${c}｜公式Web漫画の無料更新まとめ`;store.set("nameTrial",i);
+  document.querySelectorAll("#trial button").forEach((x,j)=>x.setAttribute("aria-pressed",j===i));}
+(function(){const t=document.getElementById("trial");if(!SHOW_TRIAL){t.hidden=true;setName(0);return;}
+  NAMES.forEach((n,i)=>{const b=document.createElement("button");b.type="button";b.textContent=n.join("");b.onclick=()=>setName(i);t.appendChild(b);});
+  setName(Math.min(store.get("nameTrial",0),NAMES.length-1));})();
 
-function thumb(g){
-  const [a,b]=SITES[g.site].hex;
+// ===== 取得元の状態 =====
+(function(){const g=document.getElementById("stGrid");let bad=0;
+  for(const h of PAYLOAD.health){const ok=h.status==="ok";if(!ok)bad++;const el=document.createElement("div");el.className="stc"+(ok?"":" bad");
+    el.innerHTML=`<b>${esc(h.name)}</b>：${ok?`正常（${h.count}件・最新 ${h.latest?dayLabel(dayKey(h.latest))+" "+hm(h.latest):"-"}）`:"要確認 "+esc(h.message)}`;g.appendChild(el);}
+  if(bad)document.querySelector("#stBox summary").textContent=`取得元の状態（${bad}件 要確認）`;
+  const d=J(PAYLOAD.generated);document.getElementById("gen").textContent=`最終取得 ${d.getUTCMonth()+1}/${d.getUTCDate()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;})();
+
+// ===== アイコン =====
+const I_STAR='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"/></svg>';
+const I_READ='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5 10-11"/></svg>';
+
+// ===== 操作部品 =====
+function pressGroup(sel,key){document.querySelectorAll(sel+" button").forEach(b=>b.onclick=()=>{state[key]=b.dataset.v;document.querySelectorAll(sel+" button").forEach(x=>x.setAttribute("aria-pressed",x===b));render();});}
+pressGroup("#mode","mode");
+(function(){const w=document.getElementById("wday");const opts=[["all","全曜日"],...[1,2,3,4,5,6,0].map(i=>[String(i),WD[i]])];
+  w.innerHTML=opts.map(([v,l])=>`<button type="button" data-v="${v}" aria-pressed="${v==="all"}">${l}</button>`).join("");pressGroup("#wday","wd");})();
+document.getElementById("q").addEventListener("input",e=>{state.q=e.target.value.trim().toLowerCase();render();});
+document.getElementById("hideRead").onclick=e=>{state.hideRead=!state.hideRead;e.currentTarget.setAttribute("aria-pressed",state.hideRead);render();};
+function setView(v){state.view=v;store.set("view",v);document.getElementById("vCard").setAttribute("aria-pressed",v==="card");document.getElementById("vList").setAttribute("aria-pressed",v==="list");}
+document.getElementById("vCard").onclick=()=>{setView("card");render();};
+document.getElementById("vList").onclick=()=>{setView("list");render();};
+setView(state.view);
+for(const [id,key] of [["sNew","new"],["sFav","fav"],["sUnread","unread"]]){
+  document.getElementById(id).onclick=()=>{state.only=state.only===key?null:key;
+    if(key==="unread"){state.mode="free";document.querySelectorAll("#mode button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.v==="free"));}
+    render();};}
+
+// ===== 絞り込み =====
+function base(r){return (state.site==="all"||r.site===state.site)
+  &&(state.mode==="all"||(state.mode==="free")===r.free)
+  &&(state.wd==="all"||String(wdOf(r.date))===state.wd)
+  &&(!state.q||r.series.toLowerCase().includes(state.q)||(r.author||"").toLowerCase().includes(state.q))
+  &&(!state.hideRead||!reads.has(r.url));}
+function onlyF(r){return !state.only||(state.only==="new"&&isNew(r))||(state.only==="fav"&&favs.has(r.series))
+  ||(state.only==="unread"&&r.free&&dayKey(r.date)===todayKey&&!reads.has(r.url));}
+
+// 同じ日・同じ時刻・同じ作品の一挙公開は1つにまとめる
+function groupItems(rows){const m=new Map();for(const r of rows){const k=dayKey(r.date)+hm(r.date)+r.site+r.series+r.free;
+  if(!m.has(k))m.set(k,{...r,count:1,urls:[r.url]});else{const g=m.get(k);g.count++;g.urls.push(r.url);}}return [...m.values()];}
+const gRead=g=>g.urls.every(u=>reads.has(u));
+
+function thumb(g,cls){const[a,b]=SITES[g.site].g;
+  const fb=`<span class="fb" style="background:linear-gradient(135deg,${a},${b})">${cls==="cover"?esc(g.series):""}</span>`;
   const img=g.img?`<img src="${esc(g.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:"";
-  return `<div class="thumb" style="background:linear-gradient(135deg,${a},${b})"><span class="ttl">${esc(g.series)}</span>${img}</div>`;
-}
+  return `<a class="${cls}" href="${esc(g.url)}" target="_blank" rel="noopener" data-open="${esc(g.url)}" tabindex="-1" aria-hidden="true">${fb}${img}</a>`;}
+function badges(g){return `${isNew(g)?'<span class="b new">NEW</span>':""}<span class="b ${g.free?"free":"paid"}">${g.free?"無料":"先読み・有料"}</span>`;}
+function btns(g){const f=favs.has(g.series),rd=gRead(g);
+  return `<button type="button" class="ic star" aria-pressed="${f}" aria-label="お気に入り" title="お気に入り" data-fav="${esc(g.series)}">${I_STAR}</button>`+
+         `<button type="button" class="ic read" aria-pressed="${rd}" aria-label="既読にする" title="既読" data-read="${esc(g.urls.join(" "))}">${I_READ}</button>`;}
+function siteTag(g){const s=SITES[g.site];return `<span class="site"><span class="dot" style="background:${s.color}"></span>${s.name}</span>`;}
+
+function card(g){return `<div class="card${gRead(g)?" isread":""}">${thumb(g,"cover")}
+  <div class="tl">${badges(g)}</div><div class="tr">${btns(g)}</div>
+  <div class="body"><a class="series" href="${esc(g.url)}" target="_blank" rel="noopener" data-open="${esc(g.url)}">${esc(g.series)}</a>
+  <div class="ep">${esc(g.ep)}</div>${g.count>1?`<span class="more">ほか${g.count-1}話も同時公開</span>`:""}
+  <div class="foot">${siteTag(g)}<span>${hm(g.date)}</span></div></div></div>`;}
+function row(g){return `<div class="li${gRead(g)?" isread":""}">${thumb(g,"th")}
+  <div class="main"><div class="t1"><a class="series" href="${esc(g.url)}" target="_blank" rel="noopener" data-open="${esc(g.url)}">${esc(g.series)}</a>${badges(g)}</div>
+  <div class="ep">${esc(g.ep)}${g.count>1?` <span class="more">ほか${g.count-1}話</span>`:""}</div>
+  <div class="meta">${siteTag(g)}<span>${hm(g.date)}</span>${g.author?`<span>${esc(g.author)}</span>`:""}</div></div>
+  <div class="act">${btns(g)}</div></div>`;}
+const block=list=>state.view==="card"?`<div class="grid">${list.map(card).join("")}</div>`:`<div class="list">${list.map(row).join("")}</div>`;
+
+// ===== 描画 =====
 function render(){
-  const q=state.q;
-  const rows=DATA.filter(r=>(state.mode==="all"||(state.mode==="free")===r.free)
-    &&(state.site==="all"||r.site===state.site)&&(!state.fav||favs.has(r.series))
-    &&(!q||r.series.toLowerCase().includes(q)||r.author.toLowerCase().includes(q)));
-  const groups=new Map();
-  for(const r of rows){const k=dayKey(r.date)+"|"+r.site+"|"+r.series+"|"+r.free;
-    if(!groups.has(k))groups.set(k,{...r,count:1});else groups.get(k).count++;}
+  // サイトタブ（件数つき）
+  const cnt=k=>DATA.filter(r=>(k==="all"||r.site===k)&&(state.mode==="all"||(state.mode==="free")===r.free)&&dayKey(r.date)===todayKey).length;
+  document.getElementById("tabs").innerHTML=[["all","すべて",null],...Object.entries(SITES).map(([k,s])=>[k,s.name,s.color])]
+    .map(([k,l,c])=>`<button type="button" class="tab" role="tab" aria-selected="${state.site===k}" data-site="${k}">${c?`<span class="dot" style="background:${c}"></span>`:""}${l}<span class="c" title="今日の件数">${cnt(k)}</span></button>`).join("");
+  document.querySelectorAll("#tabs .tab").forEach(b=>b.onclick=()=>{state.site=b.dataset.site;render();});
+
+  // まとめ数値
+  const nNew=groupItems(DATA.filter(r=>isNew(r)&&r.free)).length;
+  document.getElementById("nNew").innerHTML=prevT===null?'<small>次回から表示</small>':nNew+"<small>件</small>";
+  document.getElementById("nFav").innerHTML=groupItems(DATA.filter(r=>favs.has(r.series)&&dayKey(r.date)===todayKey)).length+"<small>件</small>";
+  document.getElementById("nUnread").innerHTML=groupItems(DATA.filter(r=>r.free&&dayKey(r.date)===todayKey&&!reads.has(r.url))).length+"<small>件</small>";
+  for(const [id,key] of [["sNew","new"],["sFav","fav"],["sUnread","unread"]])document.getElementById(id).setAttribute("aria-pressed",state.only===key);
+
+  const rows=DATA.filter(r=>base(r)&&onlyF(r));
+
+  // お気に入りの今日の更新を上に固定
+  const pin=document.getElementById("pin");
+  const favToday=groupItems(DATA.filter(r=>base(r)&&favs.has(r.series)&&dayKey(r.date)===todayKey)).sort((a,b)=>b.date.localeCompare(a.date));
+  pin.innerHTML=(!state.only&&favToday.length)?`<section class="pinned"><h2><span class="s">★</span>お気に入りの今日の更新</h2>${block(favToday)}</section>`:"";
+
+  // 日付 → 更新時刻 ごとに分ける
   const byDay=new Map();
-  for(const g of [...groups.values()].sort((a,b)=>b.date.localeCompare(a.date)||(b.free-a.free))){
-    const d=dayKey(g.date);if(!byDay.has(d))byDay.set(d,[]);byDay.get(d).push(g);}
+  for(const g of groupItems(rows).sort((a,b)=>b.date.localeCompare(a.date)||(b.free-a.free))){
+    const d=dayKey(g.date),t=hm(g.date);if(!byDay.has(d))byDay.set(d,new Map());const s=byDay.get(d);if(!s.has(t))s.set(t,[]);s.get(t).push(g);}
   const out=document.getElementById("out");
-  if(!byDay.size){out.innerHTML=`<div class="empty">${state.fav&&!favs.size?"カードの★を押した作品がここに表示されます":"条件に合う更新はありません"}</div>`;return;}
-  out.innerHTML=(state.mode==="paid"?`<div class="note">先読みは各サイトのポイント（1話あたり60〜70pt前後）で読める最新話です。無料で読めるようになると「無料で読める更新」に表示されます。</div>`:"")+
-  [...byDay].map(([d,list])=>`<section class="day"><h3>${dayLabel(d)}<span class="n">${list.length}作品</span></h3><div class="grid">${list.map(g=>{
-    const s=SITES[g.site], f=favs.has(g.series);
-    return `<div style="position:relative">
-      <a class="card${g.free?"":" paid"}" href="${esc(g.url)}" target="_blank" rel="noopener">
-        ${thumb(g)}<span class="badge ${g.free?"free":"paid"}">${g.free?"無料":"先読み・有料"}</span>
-        <div class="body"><div class="series">${esc(g.series)}</div><div class="ep">${esc(g.ep)}</div>
-          ${g.count>1?`<span class="more">ほか${g.count-1}話も同時公開</span>`:""}
-          <div class="foot"><span class="site"><span class="dot" style="background:${s.color}"></span>${s.name}</span><span class="time">${hm(g.date)}</span></div>
-        </div>
-      </a>
-      <button class="fav" type="button" aria-pressed="${f}" aria-label="お気に入り" data-s="${esc(g.series)}">★</button>
-    </div>`;}).join("")}</div></section>`).join("");
-  out.querySelectorAll(".fav").forEach(b=>b.onclick=()=>{const s=b.dataset.s;favs.has(s)?favs.delete(s):favs.add(s);saveFavs();render();});
+  if(!byDay.size){out.innerHTML=`<div class="empty">${state.only==="fav"&&!favs.size?"作品の★を押すと、ここにお気に入りの更新が出ます":state.only==="new"&&prevT===null?"次に開いたときから、前回以降の更新がここに出ます":"条件に合う更新はありません"}</div>`;bind();return;}
+  out.innerHTML=[...byDay].map(([d,slots])=>{const total=[...slots.values()].reduce((a,l)=>a+l.length,0);
+    return `<h2 class="dayh">${dayLabel(d)}<span class="n">${total}作品</span></h2>`+[...slots].map(([t,list])=>{
+      const sites=[...new Set(list.map(g=>g.site))].map(k=>`<span class="site"><span class="dot" style="background:${SITES[k].color}"></span>${SITES[k].short}</span>`).join("");
+      return `<section class="slot"><div class="sloth"><span class="t">${t}</span><span>の更新</span><span class="sites">${sites}</span><span>${list.length}作品</span><span class="rule"></span></div>${block(list)}</section>`;}).join("");}).join("");
+  bind();
 }
+function bind(){
+  document.querySelectorAll("[data-fav]").forEach(b=>b.onclick=e=>{e.preventDefault();const s=b.dataset.fav;favs.has(s)?favs.delete(s):favs.add(s);store.set("favs",[...favs]);render();});
+  document.querySelectorAll("[data-read]").forEach(b=>b.onclick=e=>{e.preventDefault();const us=b.dataset.read.split(" ");const all=us.every(u=>reads.has(u));us.forEach(u=>all?reads.delete(u):reads.add(u));saveReads();render();});
+  // 公式ページを開いたら自動で既読にする
+  document.querySelectorAll("[data-open]").forEach(a=>a.addEventListener("click",()=>{reads.add(a.dataset.open);saveReads();setTimeout(render,300);}));
+}
+function saveReads(){const arr=[...reads].slice(-3000);store.set("reads",arr);}
 render();
 </script>
+</body>
+</html>
