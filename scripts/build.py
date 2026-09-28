@@ -73,11 +73,17 @@ COMICI_SITES = [
     ("hanayume", "花とゆめ＋", "花ゆめ＋", "https://hanayume.com", "#F06595"),
     ("mangalt", "マンガルト（トーチ・リイドカフェ等）", "マンガルト", "https://mangalt.jp", "#845EF7"),
     ("magkan", "MAGKAN", "マグカン", "https://kansai.mag-garden.co.jp", "#20C997"),
+    ("jnbooks", "COMICリュエル&ジャルダン", "リュエル", "https://comic.j-nbooks.jp", "#AE3EC9"),
+    ("mangaspa", "マンガSPA!", "マンガSPA!", "https://mangaspa.nikkan-spa.jp", "#FA5252"),
+    ("hayacomic", "ハヤコミ", "ハヤコミ", "https://hayacomic.jp", "#495057"),
+    ("asacomi", "アサコミ", "アサコミ", "https://asacomi.jp", "#F76707"),
 ]
 # RSSを配信しているサイト (キー, 名前, 短い名前, URL, 色, フィードのパス)
 RSS_SITES = [
     ("pachikuri", "パチクリ！", "パチクリ", "https://pachikuri.jp", "#FAB005", "/rss.xml"),
     ("souffle", "Souffle", "Souffle", "https://souffle.life", "#F783AC", "/rss"),
+    ("gaugau", "マンガがうがう", "がうがう", "https://gaugau.futabanet.jp", "#FD7E14", "/feed"),
+    ("shiori", "栞", "栞", "https://shiori-on.com", "#868E96", "/rss"),
 ]
 SITE_META = {k: {"name": n, "short": s, "url": u, "color": c} for k, n, s, u, c in GIGA_SITES + OTHER_SITES + COMICI_SITES}
 SITE_META.update({k: {"name": n, "short": s, "url": u, "color": c} for k, n, s, u, c, _ in RSS_SITES})
@@ -414,7 +420,14 @@ def collect(now: datetime, fetch=get):
             elif src["type"] == "coronaex":
                 items = parse_coronaex_top(fetch(src["base"] + "/"))
             elif src["type"] == "comici":
-                items = parse_comici_top(fetch(src["base"] + "/"), src["key"], src["base"], now)
+                html = fetch(src["base"] + "/")
+                items = parse_comici_top(html, src["key"], src["base"], now)
+                if not items and "comici" in html:
+                    # 更新日でない日は「本日更新」欄がないだけなので正常とする
+                    h["message"] = "本日の更新なし"
+                    health.append(h)
+                    time.sleep(1)
+                    continue
             elif src["type"] == "rss":
                 items = parse_generic_feed(fetch(src["base"] + src["path"]), src["key"], now)
             elif src["type"] == "magapoke":
