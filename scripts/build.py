@@ -15,6 +15,7 @@ import traceback
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
+from urllib.parse import urljoin
 from pathlib import Path
 
 import requests
@@ -55,7 +56,34 @@ OTHER_SITES = [
     ("gangan", "ガンガンONLINE", "ガンガン", "https://www.ganganonline.com", "#E03131"),
     ("magapoke", "マガポケ", "マガポケ", "https://pocket.shonenmagazine.com", "#1864AB"),
 ]
-SITE_META = {k: {"name": n, "short": s, "url": u, "color": c} for k, n, s, u, c in GIGA_SITES + OTHER_SITES}
+# comici（コミチ）系のサイト。トップページの「本日更新の連載」を読む
+COMICI_SITES = [
+    ("yanchan", "ヤンチャンWeb", "ヤンチャン", "https://youngchampion.jp", "#F03E3E"),
+    ("champcross", "チャンピオンクロス", "チャンクロ", "https://championcross.jp", "#E8590C"),
+    ("younganimal", "ヤングアニマルWeb", "ヤングアニマル", "https://younganimal.com", "#2B8A3E"),
+    ("kimicomi", "キミコミ", "キミコミ", "https://kimicomi.com", "#D6336C"),
+    ("comicpash", "コミックPASH! neo", "PASH! neo", "https://comicpash.jp", "#1C7ED6"),
+    ("comicride", "ライコミ", "ライコミ", "https://comicride.jp", "#0CA678"),
+    ("hayacomic", "ハヤコミ", "ハヤコミ", "https://hayacomic.jp", "#495057"),
+    ("gcomi", "Gコミ（COMIC MeDu）", "Gコミ", "https://g-comi.jp", "#7950F2"),
+    ("asacomi", "アサコミ", "アサコミ", "https://asacomi.jp", "#F76707"),
+    ("rimacomi", "リマコミ＋", "リマコミ", "https://rimacomiplus.jp", "#E64980"),
+    ("takecomic", "竹コミ！", "竹コミ", "https://takecomic.jp", "#5C940D"),
+    ("heros", "HERO'S Web（コミプレ）", "ヒーローズ", "https://heros-web.com", "#364FC7"),
+    ("growl", "コミックグロウル", "グロウル", "https://comic-growl.com", "#C92A2A"),
+    ("yosumi", "よすみ", "よすみ", "https://yosumi.jp", "#12B886"),
+    ("bigcomics", "ビッコミ", "ビッコミ", "https://bigcomics.jp", "#1971C2"),
+]
+# RSSを配信しているサイト (キー, 名前, 短い名前, URL, 色, フィードのパス)
+RSS_SITES = [
+    ("saizensen", "最前線", "最前線", "https://sai-zen-sen.jp", "#343A40", "/rss.xml"),
+    ("pachikuri", "パチクリ！", "パチクリ", "https://pachikuri.jp", "#FAB005", "/rss.xml"),
+    ("souffle", "Souffle", "Souffle", "https://souffle.life", "#F783AC", "/rss"),
+    ("leedcafe", "リイドカフェ", "リイドカフェ", "https://leedcafe.com", "#A0522D", "/rss.xml"),
+    ("nanairo", "なないろjp", "なないろ", "https://7iro.jp", "#15AABF", "/rss"),
+]
+SITE_META = {k: {"name": n, "short": s, "url": u, "color": c} for k, n, s, u, c in GIGA_SITES + OTHER_SITES + COMICI_SITES}
+SITE_META.update({k: {"name": n, "short": s, "url": u, "color": c} for k, n, s, u, c, _ in RSS_SITES})
 
 SOURCES = [{"key": k, "name": n, "type": "giga_rss", "base": u} for k, n, s, u, c in GIGA_SITES]
 # 「あとから無料になった話」がRSSに出にくいサイト。トップページに載った作品の
@@ -67,6 +95,10 @@ for k in ATOM_SITES:
     SOURCES.append({"key": k, "name": SITE_META[k]["name"] + "（無料化分）", "type": "giga_atom", "base": SITE_META[k]["url"]})
 
 SOURCES.append({"key": "kadocomi", "name": "カドコミ", "type": "kadocomi", "base": "https://comic-walker.com"})
+for k, n, s, u, c in COMICI_SITES:
+    SOURCES.append({"key": k, "name": n, "type": "comici", "base": u})
+for k, n, s, u, c, path in RSS_SITES:
+    SOURCES.append({"key": k, "name": n, "type": "rss", "base": u, "path": path})
 SOURCES.append({"key": "magapoke", "name": "マガポケ", "type": "magapoke", "base": "https://pocket.shonenmagazine.com"})
 SOURCES.append({"key": "gangan", "name": "ガンガンONLINE", "type": "gangan", "base": "https://www.ganganonline.com"})
 
@@ -223,6 +255,58 @@ def parse_magapoke_top(html: str, now: datetime) -> list[dict]:
     return items
 
 
+def parse_comici_top(html: str, site: str, base: str, now: datetime) -> list[dict]:
+    """comici系サイトのトップページ「本日更新の連載」。作品ページへ案内する。"""
+    soup = BeautifulSoup(html, "html.parser")
+    today = now.astimezone(JST).replace(hour=0, minute=0, second=0, microsecond=0)
+    items, seen = [], set()
+    for li in soup.select("div.home-updated li.home-series-tile-item"):
+        a = li.select_one('a[href*="/series/"]')
+        h = li.select_one(".home-series-tile-item-h")
+        if not a or not h or a["href"] in seen:
+            continue
+        seen.add(a["href"])
+        img = li.find("img")
+        authors = [x.get_text(strip=True) for x in li.select(".g-author-name")]
+        items.append(dict(site=site, series=h.get_text(strip=True), ep="本日更新", author="/".join(authors),
+                          url=urljoin(base, a["href"]), date=today.isoformat(), free=True,
+                          img=img.get("src", "") if img else ""))
+    return items
+
+
+def parse_generic_feed(xml_text: str, site: str, now: datetime) -> list[dict]:
+    """一般的なRSS/Atom。直近14日分を無料の更新として扱う。"""
+    root = ET.fromstring(xml_text.encode("utf-8") if isinstance(xml_text, str) else xml_text)
+    since = now - timedelta(days=14)
+    items = []
+    entries = list(root.iter("item")) or list(root.iter(f"{ATOM_NS}entry"))
+    for it in entries:
+        title = (it.findtext("title") or it.findtext(f"{ATOM_NS}title") or "").strip()
+        link = (it.findtext("link") or "").strip()
+        if not link:
+            l = it.find(f"{ATOM_NS}link")
+            link = l.get("href", "") if l is not None else ""
+        ds = it.findtext("pubDate") or it.findtext(f"{ATOM_NS}updated") or it.findtext(f"{ATOM_NS}published") or ""
+        try:
+            date = parsedate_to_datetime(ds) if "," in ds else datetime.fromisoformat(ds.replace("Z", "+00:00"))
+        except Exception:
+            continue
+        if date.tzinfo is None:
+            date = date.replace(tzinfo=JST)
+        if date < since or not link:
+            continue
+        img = ""
+        enc = it.find("enclosure")
+        if enc is not None and "image" in (enc.get("type") or "image"):
+            img = enc.get("url", "")
+        if not img:
+            m = re.search(r'<img[^>]+src="([^"]+)"', (it.findtext("description") or "") + (it.findtext(f"{ATOM_NS}content") or ""))
+            img = m.group(1) if m else ""
+        items.append(dict(site=site, series=title, ep="", author=(it.findtext("author") or "").strip(),
+                          url=link, date=date.astimezone(JST).isoformat(), free=True, img=img))
+    return items
+
+
 # ---------- 作品別フィード（無料化した話を拾う） ----------
 ATOM_NS = "{http://www.w3.org/2005/Atom}"
 SERIES_ID_RE = re.compile(r"series-[a-z-]*thumbnail[a-z-]*(?:/|%2F)(\d{10,})-")
@@ -312,6 +396,10 @@ def collect(now: datetime, fetch=get):
                 continue
             elif src["type"] == "kadocomi":
                 items = parse_kadocomi_new(fetch(src["base"] + "/new"))
+            elif src["type"] == "comici":
+                items = parse_comici_top(fetch(src["base"] + "/"), src["key"], src["base"], now)
+            elif src["type"] == "rss":
+                items = parse_generic_feed(fetch(src["base"] + src["path"]), src["key"], now)
             elif src["type"] == "magapoke":
                 items = parse_magapoke_top(fetch(src["base"] + "/"), now)
             elif src["type"] == "gangan":
