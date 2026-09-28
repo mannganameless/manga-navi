@@ -1,0 +1,218 @@
+<title>マンガ更新ナビ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#F4F5F8; --surface:#FFFFFF; --ink:#15171C; --muted:#5D6371; --line:#DCDFE6;
+  --accent:#2743D6; --accent-ink:#FFFFFF; --soft:#E9ECF7;
+  --ok:#2B8A3E; --warn:#A8620A; --warn-bg:#FFF3DF; --free:#1E7B34; --free-bg:#E1F3E5; --paid:#8A5A00; --paid-bg:#FBEFD6;
+  --jump:#E8590C; --days:#1C7ED6; --gardo:#C2255C; --earthstar:#5C940D;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111318; --surface:#1A1D24; --ink:#ECEEF3; --muted:#9AA1AF; --line:#2C3140;
+  --accent:#7D92FF; --accent-ink:#0E1330; --soft:#232A45;
+  --ok:#69DB7C; --warn:#F2B35A; --warn-bg:#33270F; --free:#69DB7C; --free-bg:#1C3322; --paid:#F2B35A; --paid-bg:#33270F;
+  --jump:#FF8A4C; --days:#5AAEFF; --gardo:#F06595; --earthstar:#94D82D;
+  color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#111318; --surface:#1A1D24; --ink:#ECEEF3; --muted:#9AA1AF; --line:#2C3140;
+  --accent:#7D92FF; --accent-ink:#0E1330; --soft:#232A45;
+  --ok:#69DB7C; --warn:#F2B35A; --warn-bg:#33270F; --free:#69DB7C; --free-bg:#1C3322; --paid:#F2B35A; --paid-bg:#33270F;
+  --jump:#FF8A4C; --days:#5AAEFF; --gardo:#F06595; --earthstar:#94D82D;
+  color-scheme:dark;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;font-size:15px;line-height:1.6;padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:1080px;margin:0 auto}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 16px;padding-block:28px 18px}
+.logo{font-family:"Dela Gothic One","Zen Kaku Gothic New",sans-serif;font-size:30px;line-height:1.1;letter-spacing:.02em;margin:0}
+.logo span{color:var(--accent)}
+.meta{color:var(--muted);font-size:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.proto{border:1px solid var(--line);border-radius:4px;padding:1px 8px;font-size:12px;letter-spacing:.05em}
+details.status-box{margin-bottom:16px}
+details.status-box summary{cursor:pointer;color:var(--muted);font-size:13px;font-weight:700;letter-spacing:.06em}
+.status{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;margin-top:10px}
+.st{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:center}
+.st .dot{width:10px;height:10px;border-radius:50%}
+.st b{font-size:14px}
+.st small{grid-column:2;color:var(--muted);font-size:12px;line-height:1.5}
+.st.warn{border-color:var(--warn);background:var(--warn-bg)}
+.st.warn small{color:var(--warn)}
+.pill{font-size:11px;font-weight:700;border-radius:999px;padding:0 8px;margin-left:6px;vertical-align:1px}
+.pill.ok{color:var(--ok);border:1px solid currentColor}
+.pill.warn{color:var(--warn);border:1px solid currentColor}
+.pill.off{color:var(--muted);border:1px solid var(--line)}
+.controls{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:10px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line)}
+.mode{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px;align-self:flex-start;flex-wrap:wrap}
+.mode button{font:inherit;font-size:14px;font-weight:700;border:0;border-radius:7px;padding:6px 14px;background:none;color:var(--muted);cursor:pointer}
+.mode button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.mode .count{font-weight:500;font-size:12px;margin-left:4px;opacity:.8}
+.row2{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.search{flex:1 1 220px;font:inherit;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.search:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:13px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 12px;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip .dot{width:8px;height:8px;border-radius:50%}
+.day{margin-top:26px}
+.day h3{font-size:17px;margin:0 0 10px;display:flex;align-items:baseline;gap:10px}
+.day h3 .n{font-size:12px;color:var(--muted);font-weight:500}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.card{position:relative;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .15s,border-color .15s}
+.card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.card.paid{opacity:.82}
+.thumb{position:relative;aspect-ratio:16/10;max-width:100%;display:flex;align-items:flex-end;padding:10px;color:#fff;overflow:hidden}
+.thumb::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.28) 1px,transparent 1.4px);background-size:7px 7px}
+.thumb .ttl{position:relative;font-weight:700;font-size:15px;line-height:1.35;text-shadow:0 1px 2px rgba(0,0,0,.35);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+.thumb .ph{position:absolute;top:8px;left:8px;font-size:10px;letter-spacing:.06em;background:rgba(0,0,0,.35);border-radius:3px;padding:0 5px}
+.badge{position:absolute;z-index:2;top:8px;right:8px;font-size:12px;font-weight:700;border-radius:4px;padding:1px 7px}
+.badge.free{background:var(--free-bg);color:var(--free)}
+.badge.paid{background:var(--paid-bg);color:var(--paid)}
+.body{padding:9px 11px 11px;display:flex;flex-direction:column;gap:3px;flex:1}
+.series{font-weight:700;font-size:14px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ep{font-size:13px;color:var(--ink);overflow-wrap:anywhere}
+.more{font-size:11px;color:var(--accent);background:var(--soft);border-radius:4px;padding:0 6px;align-self:flex-start}
+.foot{margin-top:auto;padding-top:4px;display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.site{display:inline-flex;align-items:center;gap:4px;min-width:0}
+.site .dot{width:7px;height:7px;border-radius:50%;flex:none}
+.time{font-variant-numeric:tabular-nums}
+.fav{position:absolute;z-index:3;right:8px;top:38px;height:30px;width:30px;border:0;border-radius:50%;background:rgba(0,0,0,.35);cursor:pointer;font-size:16px;line-height:1;color:rgba(255,255,255,.85)}
+.fav[aria-pressed="true"]{color:#FFD43B;background:rgba(0,0,0,.55)}
+.empty{padding:28px;text-align:center;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:10px;margin-top:22px}
+.note{margin-top:14px;font-size:13px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+footer{margin-top:36px;color:var(--muted);font-size:12px;line-height:1.7}
+@media (max-width:480px){.logo{font-size:24px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.thumb .ttl{font-size:13px}}
+@media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1 class="logo">マンガ<span>更新</span>ナビ</h1>
+    <div class="meta"><span id="gen"></span></div>
+  </header>
+
+  <details class="status-box" id="statusBox">
+    <summary>取得元の状態</summary>
+    <div class="status" id="status"></div>
+  </details>
+
+  <div class="controls">
+    <div class="mode" role="group" aria-label="表示する話">
+      <button type="button" id="mFree" aria-pressed="true">無料で読める更新<span class="count" id="cFree"></span></button>
+      <button type="button" id="mPaid" aria-pressed="false">先読み（有料）<span class="count" id="cPaid"></span></button>
+      <button type="button" id="mAll" aria-pressed="false">すべて</button>
+    </div>
+    <div class="row2">
+      <input id="q" class="search" type="search" placeholder="作品名・作者名で絞り込み" aria-label="作品名・作者名で絞り込み">
+      <div class="chips" id="chips"></div>
+    </div>
+  </div>
+
+  <main id="out"></main>
+
+  <footer>
+    このサイトは各公式サイトの更新情報（作品名・話数・公開日時）をまとめ、公式ページへ案内するものです。漫画本編は掲載していません。サムネイル画像は各公式サイトの配信画像を表示しています。<br>
+    「無料」「先読み・有料」は、各サイトの公式RSSの無料期間情報と、コミックガルドはトップページの曜日別欄から判定しています。実際の料金は各公式サイトでご確認ください。
+  </footer>
+</div>
+
+<script>
+const PAYLOAD = __PAYLOAD__;
+const DATA = PAYLOAD.items;
+const NOW = new Date(PAYLOAD.generated);
+const SITES = {
+  jump:{name:"少年ジャンプ＋",color:"var(--jump)",hex:["#E8590C","#C2410C"],src:"公式RSS（無料期間情報つき）"},
+  gardo:{name:"コミックガルド",color:"var(--gardo)",hex:["#C2255C","#9C1C49"],src:"トップページ（無料）＋RSS（先読み）・毎日12時更新"},
+  earthstar:{name:"コミックアース・スター",color:"var(--earthstar)",hex:["#5C940D","#3F6B06"],src:"公式RSS（無料期間情報つき）"},
+  days:{name:"コミックDAYS",color:"var(--days)",hex:["#1C7ED6","#1561A8"],src:"公式RSS"}
+};
+const PENDING = [
+  {name:"カドコミ",note:"公式RSSなし。ページ取得で対応予定"},
+  {name:"アルファポリス",note:"規約の確認待ちのため保留中"}
+];
+const WD="日月火水木金土", pad=n=>String(n).padStart(2,"0");
+const jst=iso=>new Date(new Date(iso).getTime()+9*3600e3);
+const dayKey=iso=>{const d=jst(iso);return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`;};
+const hm=iso=>{const d=jst(iso);return `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;};
+const md=iso=>{const d=jst(iso);return `${d.getUTCMonth()+1}/${d.getUTCDate()}`;};
+function dayLabel(key){
+  const [y,m,d]=key.split("-").map(Number), t=Date.UTC(y,m-1,d), n=jst(NOW.toISOString());
+  const diff=Math.round((Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate())-t)/864e5);
+  const base=`${m}/${d}（${WD[new Date(t).getUTCDay()]}）`;
+  return diff===0?`今日 ${base}`:diff===1?`昨日 ${base}`:diff<7?`${diff}日前 ${base}`:base;
+}
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+let favs=new Set();
+try{favs=new Set(JSON.parse(localStorage.getItem("favs")||"[]"));}catch(e){}
+const saveFavs=()=>{try{localStorage.setItem("favs",JSON.stringify([...favs]));}catch(e){}};
+const state={mode:"free",site:"all",fav:false,q:""};
+
+document.getElementById("cFree").textContent=DATA.filter(r=>r.free).length+"件";
+document.getElementById("cPaid").textContent=DATA.filter(r=>!r.free).length+"件";
+
+(function(){
+  const box=document.getElementById("status"); let bad=0;
+  const seen=new Set();
+  for(const h of PAYLOAD.health){
+    const s=SITES[h.key]; const warn=h.status!=="ok"; if(warn) bad++;
+    const el=document.createElement("div"); el.className="st"+(warn?" warn":"");
+    el.innerHTML=`<span class="dot" style="background:${s.color}"></span><b>${esc(h.name)}<span class="pill ${warn?"warn":"ok"}">${warn?"要確認":"正常"}</span></b>
+      <small>${warn?esc(h.message):`${h.count}件取得・最新 ${md(h.latest)} ${hm(h.latest)}`}</small>`;
+    box.appendChild(el);
+  }
+  for(const p of PENDING){const el=document.createElement("div");el.className="st";
+    el.innerHTML=`<span class="dot" style="background:var(--line)"></span><b>${p.name}<span class="pill off">準備中</span></b><small>${p.note}</small>`;box.appendChild(el);}
+  if(bad) document.querySelector("#statusBox summary").textContent=`取得元の状態（${bad}件 要確認）`;
+  const g=jst(PAYLOAD.generated); document.getElementById("gen").textContent=`最終更新 ${g.getUTCMonth()+1}/${g.getUTCDate()} ${pad(g.getUTCHours())}:${pad(g.getUTCMinutes())}`;
+})();
+
+(function(){
+  const modes={free:"mFree",paid:"mPaid",all:"mAll"};
+  for(const [m,id] of Object.entries(modes)) document.getElementById(id).onclick=()=>{state.mode=m;for(const [mm,ii] of Object.entries(modes))document.getElementById(ii).setAttribute("aria-pressed",mm===m);render();};
+  const c=document.getElementById("chips"), siteBtns=[];
+  const mk=(label,pressed,on,dot)=>{const b=document.createElement("button");b.type="button";b.className="chip";b.setAttribute("aria-pressed",pressed);b.innerHTML=(dot?`<span class="dot" style="background:${dot}"></span>`:"")+label;b.onclick=()=>on(b);c.appendChild(b);return b;};
+  const setSite=k=>{state.site=k;siteBtns.forEach(([kk,b])=>b.setAttribute("aria-pressed",kk===k));render();};
+  siteBtns.push(["all",mk("全サイト",true,()=>setSite("all"))]);
+  for(const [k,s] of Object.entries(SITES)) siteBtns.push([k,mk(s.name,false,()=>setSite(k),s.color)]);
+  mk("★ お気に入り",false,b=>{state.fav=!state.fav;b.setAttribute("aria-pressed",state.fav);render();});
+  document.getElementById("q").addEventListener("input",e=>{state.q=e.target.value.trim().toLowerCase();render();});
+})();
+
+function thumb(g){
+  const [a,b]=SITES[g.site].hex;
+  const img=g.img?`<img src="${esc(g.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:"";
+  return `<div class="thumb" style="background:linear-gradient(135deg,${a},${b})"><span class="ttl">${esc(g.series)}</span>${img}</div>`;
+}
+function render(){
+  const q=state.q;
+  const rows=DATA.filter(r=>(state.mode==="all"||(state.mode==="free")===r.free)
+    &&(state.site==="all"||r.site===state.site)&&(!state.fav||favs.has(r.series))
+    &&(!q||r.series.toLowerCase().includes(q)||r.author.toLowerCase().includes(q)));
+  const groups=new Map();
+  for(const r of rows){const k=dayKey(r.date)+"|"+r.site+"|"+r.series+"|"+r.free;
+    if(!groups.has(k))groups.set(k,{...r,count:1});else groups.get(k).count++;}
+  const byDay=new Map();
+  for(const g of [...groups.values()].sort((a,b)=>b.date.localeCompare(a.date)||(b.free-a.free))){
+    const d=dayKey(g.date);if(!byDay.has(d))byDay.set(d,[]);byDay.get(d).push(g);}
+  const out=document.getElementById("out");
+  if(!byDay.size){out.innerHTML=`<div class="empty">${state.fav&&!favs.size?"カードの★を押した作品がここに表示されます":"条件に合う更新はありません"}</div>`;return;}
+  out.innerHTML=(state.mode==="paid"?`<div class="note">先読みは各サイトのポイント（1話あたり60〜70pt前後）で読める最新話です。無料で読めるようになると「無料で読める更新」に表示されます。</div>`:"")+
+  [...byDay].map(([d,list])=>`<section class="day"><h3>${dayLabel(d)}<span class="n">${list.length}作品</span></h3><div class="grid">${list.map(g=>{
+    const s=SITES[g.site], f=favs.has(g.series);
+    return `<div style="position:relative">
+      <a class="card${g.free?"":" paid"}" href="${esc(g.url)}" target="_blank" rel="noopener">
+        ${thumb(g)}<span class="badge ${g.free?"free":"paid"}">${g.free?"無料":"先読み・有料"}</span>
+        <div class="body"><div class="series">${esc(g.series)}</div><div class="ep">${esc(g.ep)}</div>
+          ${g.count>1?`<span class="more">ほか${g.count-1}話も同時公開</span>`:""}
+          <div class="foot"><span class="site"><span class="dot" style="background:${s.color}"></span>${s.name}</span><span class="time">${hm(g.date)}</span></div>
+        </div>
+      </a>
+      <button class="fav" type="button" aria-pressed="${f}" aria-label="お気に入り" data-s="${esc(g.series)}">★</button>
+    </div>`;}).join("")}</div></section>`).join("");
+  out.querySelectorAll(".fav").forEach(b=>b.onclick=()=>{const s=b.dataset.s;favs.has(s)?favs.delete(s):favs.add(s);saveFavs();render();});
+}
+render();
+</script>
