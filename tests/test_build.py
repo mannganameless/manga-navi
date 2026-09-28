@@ -19,6 +19,10 @@ def fake_fetch(url):
         return (FX / "gardo_top.html").read_text()
     if url == "https://comic-days.com/rss":
         return (FX / "jump_rss.xml").read_text().replace("Sep 2026", "Aug 2026")  # 古いデータ
+    if url == "https://kuragebunch.com/":
+        return (FX / "kurage_top.html").read_text()
+    if url == "https://kuragebunch.com/atom/series/12207421983749476406":
+        return (FX / "kurage_atom.xml").read_text()
     raise RuntimeError("接続エラー（テスト）")
 
 
@@ -45,6 +49,17 @@ assert st["コミックガルド（無料公開分）"] == "ok"
 assert st["コミックアース・スター"] == "error"   # 取得失敗 → 通知対象
 assert st["くらげバンチ"] == "error"
 assert st["コミックDAYS"] == "stale"            # 7日以上新着なし → 通知対象
+
+# 作品別フィード：7日以内に無料になった話だけ拾う
+kf = by.get("https://kuragebunch.com/episode/12207421984031582767")
+assert kf and kf["free"] and kf["date"].startswith("2026-09-22T12:00"), kf
+assert kf["ep"] == "第6話 グル 後半" and kf["series"] == "介護とハイエナ" and kf["img"]
+assert "https://kuragebunch.com/episode/12207421984152846114" not in by  # 有料
+assert "https://kuragebunch.com/episode/1" not in by                     # 古い無料化
+hk = next(h for h in health if h["name"] == "くらげバンチ（無料化分）")
+assert hk["status"] == "ok" and hk["count"] == 1 and "2作品" in hk["message"], hk
+hz = next(h for h in health if h["name"] == "ゼノン編集部（無料化分）")
+assert hz["status"] == "error"
 
 build.render(items, health, NOW)
 html = (build.ROOT / "site" / "index.html").read_text()

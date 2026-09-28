@@ -46,10 +46,24 @@ GIGA_SITES = [
     ("seasons", "Seasons", "Seasons", "https://comic-seasons.com", "#66A80F"),
     ("ichijin", "一迅プラス", "一迅プラス", "https://ichicomi.com", "#1971C2"),
     ("yours", "COMIC Y-OURS", "Y-OURS", "https://comic-y-ours.com", "#E64980"),
+    ("morningtwo", "モーニング・ツー", "モーニング・ツー", "https://morningtwo.com", "#1098AD"),
+    ("getsuma", "月マガ基地", "月マガ基地", "https://getsumagakichi.com", "#C92A2A"),
+    ("sirius", "ビブリオシリウス", "シリウス", "https://bibliosirius.com", "#3B5BDB"),
+    ("andsofa", "&Sofa", "&Sofa", "https://andsofa.com", "#A61E4D"),
+    ("mtsquare", "まんがタイムSquare", "タイムSquare", "https://mangatime-square.com", "#F59F00"),
+    ("ourfeel", "OUR FEEL", "OUR FEEL", "https://ourfeel.jp", "#9C36B5"),
 ]
 SITE_META = {k: {"name": n, "short": s, "url": u, "color": c} for k, n, s, u, c in GIGA_SITES}
 
 SOURCES = [{"key": k, "name": n, "type": "giga_rss", "base": u} for k, n, s, u, c in GIGA_SITES]
+# 「あとから無料になった話」がRSSに出にくいサイト。トップページに載った作品の
+# 作品別フィード（/atom/series/ID）を読み、最近無料になった話を拾う
+ATOM_SITES = ["kurage", "zenon", "magcomi", "action", "earthstar", "ichijin", "days"]
+MAX_SERIES = 25      # 1サイトあたりに調べる作品数の上限
+FREE_LOOKBACK_DAYS = 7
+for k in ATOM_SITES:
+    SOURCES.append({"key": k, "name": SITE_META[k]["name"] + "（無料化分）", "type": "giga_atom", "base": SITE_META[k]["url"]})
+
 # コミックガルドは無料公開分がRSSに出ないため、トップページからも取得する
 SOURCES.insert(5, {"key": "gardo", "name": "コミックガルド（無料公開分）", "type": "gardo_top", "base": "https://comic-gardo.com"})
 
@@ -129,6 +143,58 @@ def parse_gardo_top(html: str, now: datetime) -> list[dict]:
     return items
 
 
+# ---------- 作品別フィード（無料化した話を拾う） ----------
+ATOM_NS = "{http://www.w3.org/2005/Atom}"
+SERIES_ID_RE = re.compile(r"series-[a-z-]*thumbnail[a-z-]*(?:/|%2F)(\d{10,})-")
+
+
+def series_ids_from_top(html: str) -> list[str]:
+    """トップページの「最新の更新」欄に載っている作品のIDを集める。"""
+    soup = BeautifulSoup(html, "html.parser")
+    ids: list[str] = []
+    for box in soup.select('div.latest-update, div[class*="weekly_update_container"]'):
+        ids += [li["data-test-id"] for li in box.select("li[data-test-id]")]
+        ids += SERIES_ID_RE.findall(str(box))
+    return list(dict.fromkeys(ids))[:MAX_SERIES]
+
+
+def parse_series_atom(xml_text: str, site: str, now: datetime) -> list[dict]:
+    """作品別フィードから、最近（7日以内）無料になった話だけを返す。"""
+    root = ET.fromstring(xml_text)
+    since = now - timedelta(days=FREE_LOOKBACK_DAYS)
+    items = []
+    for e in root.iter(f"{ATOM_NS}entry"):
+        fs = e.findtext(f"{GIGA_NS}freeTermStartDate")
+        if not fs:
+            continue
+        start = datetime.fromisoformat(fs.replace("Z", "+00:00"))
+        if not (since <= start <= now):
+            continue
+        link, img = "", ""
+        for l in e.findall(f"{ATOM_NS}link"):
+            if l.get("rel") == "enclosure":
+                img = l.get("href", "")
+            elif not link:
+                link = l.get("href", "")
+        items.append(dict(site=site, series=(e.findtext(f"{ATOM_NS}content") or "").strip(),
+                          ep=(e.findtext(f"{ATOM_NS}title") or "").strip(),
+                          author=(e.findtext(f"{ATOM_NS}author/{ATOM_NS}name") or "").strip(),
+                          url=link, date=start.astimezone(JST).isoformat(), free=True, img=img))
+    return items
+
+
+def collect_atom(base: str, site: str, now: datetime, fetch) -> tuple[list[dict], int]:
+    ids = series_ids_from_top(fetch(base + "/"))
+    items = []
+    for sid in ids:
+        try:
+            items += parse_series_atom(fetch(f"{base}/atom/series/{sid}"), site, now)
+        except Exception:
+            traceback.print_exc()
+        time.sleep(0.5)
+    return items, len(ids)
+
+
 # ---------- まとめ ----------
 def collect(now: datetime, fetch=get):
     all_items, health = [], []
@@ -137,6 +203,19 @@ def collect(now: datetime, fetch=get):
         try:
             if src["type"] == "giga_rss":
                 items = parse_giga_rss(fetch(src["base"] + "/rss"), src["key"], now)
+            elif src["type"] == "giga_atom":
+                items, n_series = collect_atom(src["base"], src["key"], now, fetch)
+                h["count"] = len(items)
+                if n_series == 0:
+                    h.update(status="error", message="トップページから作品を見つけられませんでした。サイトの構造が変わった可能性があります。")
+                else:
+                    h["message"] = f"{n_series}作品を確認"
+                    if items:
+                        h["latest"] = max(i["date"] for i in items)
+                all_items += items
+                health.append(h)
+                time.sleep(1)
+                continue
             else:
                 items = parse_gardo_top(fetch(src["base"] + "/"), now)
             h["count"] = len(items)
