@@ -55,6 +55,7 @@ OTHER_SITES = [
     ("kadocomi", "カドコミ", "カドコミ", "https://comic-walker.com", "#F76707"),
     ("gangan", "ガンガンONLINE", "ガンガン", "https://www.ganganonline.com", "#E03131"),
     ("magapoke", "マガポケ", "マガポケ", "https://pocket.shonenmagazine.com", "#1864AB"),
+    ("coronaex", "コロナEX", "コロナEX", "https://to-corona-ex.com", "#F59F00"),
 ]
 # comici（コミチ）系のサイト。トップページの「本日更新の連載」を読む
 COMICI_SITES = [
@@ -64,23 +65,16 @@ COMICI_SITES = [
     ("kimicomi", "キミコミ", "キミコミ", "https://kimicomi.com", "#D6336C"),
     ("comicpash", "コミックPASH! neo", "PASH! neo", "https://comicpash.jp", "#1C7ED6"),
     ("comicride", "ライコミ", "ライコミ", "https://comicride.jp", "#0CA678"),
-    ("hayacomic", "ハヤコミ", "ハヤコミ", "https://hayacomic.jp", "#495057"),
     ("gcomi", "Gコミ（COMIC MeDu）", "Gコミ", "https://g-comi.jp", "#7950F2"),
-    ("asacomi", "アサコミ", "アサコミ", "https://asacomi.jp", "#F76707"),
     ("rimacomi", "リマコミ＋", "リマコミ", "https://rimacomiplus.jp", "#E64980"),
     ("takecomic", "竹コミ！", "竹コミ", "https://takecomic.jp", "#5C940D"),
     ("heros", "HERO'S Web（コミプレ）", "ヒーローズ", "https://heros-web.com", "#364FC7"),
     ("growl", "コミックグロウル", "グロウル", "https://comic-growl.com", "#C92A2A"),
-    ("yosumi", "よすみ", "よすみ", "https://yosumi.jp", "#12B886"),
-    ("bigcomics", "ビッコミ", "ビッコミ", "https://bigcomics.jp", "#1971C2"),
 ]
 # RSSを配信しているサイト (キー, 名前, 短い名前, URL, 色, フィードのパス)
 RSS_SITES = [
-    ("saizensen", "最前線", "最前線", "https://sai-zen-sen.jp", "#343A40", "/rss.xml"),
     ("pachikuri", "パチクリ！", "パチクリ", "https://pachikuri.jp", "#FAB005", "/rss.xml"),
     ("souffle", "Souffle", "Souffle", "https://souffle.life", "#F783AC", "/rss"),
-    ("leedcafe", "リイドカフェ", "リイドカフェ", "https://leedcafe.com", "#A0522D", "/rss.xml"),
-    ("nanairo", "なないろjp", "なないろ", "https://7iro.jp", "#15AABF", "/rss"),
 ]
 SITE_META = {k: {"name": n, "short": s, "url": u, "color": c} for k, n, s, u, c in GIGA_SITES + OTHER_SITES + COMICI_SITES}
 SITE_META.update({k: {"name": n, "short": s, "url": u, "color": c} for k, n, s, u, c, _ in RSS_SITES})
@@ -99,6 +93,7 @@ for k, n, s, u, c in COMICI_SITES:
     SOURCES.append({"key": k, "name": n, "type": "comici", "base": u})
 for k, n, s, u, c, path in RSS_SITES:
     SOURCES.append({"key": k, "name": n, "type": "rss", "base": u, "path": path})
+SOURCES.append({"key": "coronaex", "name": "コロナEX", "type": "coronaex", "base": "https://to-corona-ex.com"})
 SOURCES.append({"key": "magapoke", "name": "マガポケ", "type": "magapoke", "base": "https://pocket.shonenmagazine.com"})
 SOURCES.append({"key": "gangan", "name": "ガンガンONLINE", "type": "gangan", "base": "https://www.ganganonline.com"})
 
@@ -255,6 +250,23 @@ def parse_magapoke_top(html: str, now: datetime) -> list[dict]:
     return items
 
 
+def parse_coronaex_top(html: str) -> list[dict]:
+    """コロナEXのトップページ（本日更新の作品と最新話）。画像は有効期限つきのため使わない。"""
+    nd = next_data(html)
+    items = []
+    for c in nd["props"]["pageProps"]["fallbackData"]["comics"]["resources"]:
+        ep = c.get("latest_episode") or {}
+        if not ep.get("id") or not ep.get("published_at"):
+            continue
+        date = datetime.fromisoformat(ep["published_at"])
+        authors = "/".join(a.get("name", "") for a in c.get("authors", []))
+        items.append(dict(site="coronaex", series=c.get("title", ""),
+                          ep=f"第{ep['episode_order']}話" if ep.get("episode_order") else "最新話",
+                          author=authors, url=f"https://to-corona-ex.com/episodes/{ep['id']}",
+                          date=date.astimezone(JST).isoformat(), free=ep.get("episode_status") == "free_viewing", img=""))
+    return items
+
+
 def parse_comici_top(html: str, site: str, base: str, now: datetime) -> list[dict]:
     """comici系サイトのトップページ「本日更新の連載」。作品ページへ案内する。"""
     soup = BeautifulSoup(html, "html.parser")
@@ -396,6 +408,8 @@ def collect(now: datetime, fetch=get):
                 continue
             elif src["type"] == "kadocomi":
                 items = parse_kadocomi_new(fetch(src["base"] + "/new"))
+            elif src["type"] == "coronaex":
+                items = parse_coronaex_top(fetch(src["base"] + "/"))
             elif src["type"] == "comici":
                 items = parse_comici_top(fetch(src["base"] + "/"), src["key"], src["base"], now)
             elif src["type"] == "rss":

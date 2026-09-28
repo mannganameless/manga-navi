@@ -23,6 +23,8 @@ def fake_fetch(url):
         return (FX / "kurage_top.html").read_text()
     if url == "https://kuragebunch.com/atom/series/12207421983749476406":
         return (FX / "kurage_atom.xml").read_text()
+    if url == "https://to-corona-ex.com/":
+        return (FX / "coronaex_top.html").read_text()
     if url == "https://youngchampion.jp/":
         return (FX / "comici_top.html").read_text()
     if url == "https://pachikuri.jp/rss.xml":
@@ -85,6 +87,9 @@ yc = by["https://youngchampion.jp/series/e384a1f128162"]
 assert yc["free"] and yc["series"] == "教えて・旦那サマ" and yc["author"] == "草薙竜樹" and yc["date"].startswith("2026-09-28T00:00")
 pk = by["https://pachikuri.jp/comic/5"]
 assert pk["img"] == "https://pachikuri.jp/img/5.jpg" and "https://pachikuri.jp/comic/1" not in by
+
+ce = by["https://to-corona-ex.com/episodes/274976650170893"]
+assert ce["free"] and ce["ep"] == "第14話" and ce["date"].startswith("2026-09-28T11:00")
 
 # 新デザイン・予備の読み取り
 new_design = '<ul><li class="UpdateSeriesItem_item_wrapper__w6pxS"><img src="https://x/https%3A%2F%2Fcdn-img.comic-action.com%2Fpublic%2Fseries-thumbnail%2F4855956445099488439-1ffe%3F1"></li></ul>'
