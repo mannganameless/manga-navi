@@ -35,8 +35,7 @@ GIGA_SITES = [
     ("days", "コミックDAYS", "DAYS", "https://comic-days.com", "#1C7ED6"),
     ("gardo", "コミックガルド", "ガルド", "https://comic-gardo.com", "#C2255C"),
     ("earthstar", "コミックアース・スター", "アース・スター", "https://comic-earthstar.com", "#5C940D"),
-    ("kurage", "くらげバンチ", "くらげ", "https://kuragebunch.com", "#0C8599"),
-    ("bunchkai", "コミックバンチKai", "バンチKai", "https://comicbunch-kai.com", "#E03131"),
+    ("kurage", "くらげバンチ", "くらげ", "https://kuragebunch.com", "#0C8599"),  # コミックバンチKaiの作品もここに含まれる
     ("zenon", "ゼノン編集部", "ゼノン", "https://comic-zenon.com", "#495057"),
     ("magcomi", "マグコミ", "マグコミ", "https://magcomi.com", "#7048E8"),
     ("action", "webアクション", "アクション", "https://comic-action.com", "#F76707"),
