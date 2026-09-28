@@ -56,6 +56,7 @@ OTHER_SITES = [
     ("gangan", "ガンガンONLINE", "ガンガン", "https://www.ganganonline.com", "#E03131"),
     ("magapoke", "マガポケ", "マガポケ", "https://pocket.shonenmagazine.com", "#1864AB"),
     ("coronaex", "コロナEX", "コロナEX", "https://to-corona-ex.com", "#F59F00"),
+    ("nettai", "COMIC熱帯", "熱帯", "https://www.comicnettai.com", "#E8590C"),
 ]
 # comici（コミチ）系のサイト。トップページの「本日更新の連載」を読む
 COMICI_SITES = [
@@ -77,13 +78,13 @@ COMICI_SITES = [
     ("mangaspa", "マンガSPA!", "マンガSPA!", "https://mangaspa.nikkan-spa.jp", "#FA5252"),
     ("hayacomic", "ハヤコミ", "ハヤコミ", "https://hayacomic.jp", "#495057"),
     ("asacomi", "アサコミ", "アサコミ", "https://asacomi.jp", "#F76707"),
+    ("bigcomics", "ビッコミ", "ビッコミ", "https://bigcomics.jp", "#1971C2"),
 ]
 # RSSを配信しているサイト (キー, 名前, 短い名前, URL, 色, フィードのパス)
 RSS_SITES = [
     ("pachikuri", "パチクリ！", "パチクリ", "https://pachikuri.jp", "#FAB005", "/rss.xml"),
     ("souffle", "Souffle", "Souffle", "https://souffle.life", "#F783AC", "/rss"),
     ("gaugau", "マンガがうがう", "がうがう", "https://gaugau.futabanet.jp", "#FD7E14", "/feed"),
-    ("shiori", "栞", "栞", "https://shiori-on.com", "#868E96", "/rss"),
 ]
 SITE_META = {k: {"name": n, "short": s, "url": u, "color": c} for k, n, s, u, c in GIGA_SITES + OTHER_SITES + COMICI_SITES}
 SITE_META.update({k: {"name": n, "short": s, "url": u, "color": c} for k, n, s, u, c, _ in RSS_SITES})
@@ -102,6 +103,7 @@ for k, n, s, u, c in COMICI_SITES:
     SOURCES.append({"key": k, "name": n, "type": "comici", "base": u})
 for k, n, s, u, c, path in RSS_SITES:
     SOURCES.append({"key": k, "name": n, "type": "rss", "base": u, "path": path})
+SOURCES.append({"key": "nettai", "name": "COMIC熱帯", "type": "nettai", "base": "https://www.comicnettai.com"})
 SOURCES.append({"key": "coronaex", "name": "コロナEX", "type": "coronaex", "base": "https://to-corona-ex.com"})
 SOURCES.append({"key": "magapoke", "name": "マガポケ", "type": "magapoke", "base": "https://pocket.shonenmagazine.com"})
 SOURCES.append({"key": "gangan", "name": "ガンガンONLINE", "type": "gangan", "base": "https://www.ganganonline.com"})
@@ -276,6 +278,34 @@ def parse_coronaex_top(html: str) -> list[dict]:
     return items
 
 
+def parse_nettai_top(html: str, now: datetime) -> list[dict]:
+    """COMIC熱帯のトップページ「M月D日更新」欄。"""
+    soup = BeautifulSoup(html, "html.parser")
+    base = "https://www.comicnettai.com"
+    n = now.astimezone(JST)
+    items = []
+    for h in soup.select("h2, h3"):
+        m = re.search(r"(\d{1,2})月(\d{1,2})日更新", h.get_text())
+        if not m:
+            continue
+        year = n.year - 1 if int(m[1]) > n.month + 1 else n.year
+        date = datetime(year, int(m[1]), int(m[2]), tzinfo=JST)
+        box = h.find_next_sibling("div", class_="comic__list")
+        if not box:
+            continue
+        for it in box.select("div.comic__item"):
+            a = it.select_one("a.comic__link")
+            title = it.select_one(".comic__title")
+            if not a or not title:
+                continue
+            img = it.select_one("img")
+            items.append(dict(site="nettai", series=title.get_text(strip=True), ep="最新話",
+                              author="/".join(li.get_text(strip=True) for li in it.select(".comic__author--item")),
+                              url=urljoin(base, a["href"]), date=date.isoformat(), free=True,
+                              img=(img.get("data-src") or img.get("src") or "") if img else ""))
+    return items
+
+
 def parse_comici_top(html: str, site: str, base: str, now: datetime) -> list[dict]:
     """comici系サイトのトップページ「本日更新の連載」。作品ページへ案内する。"""
     soup = BeautifulSoup(html, "html.parser")
@@ -417,6 +447,8 @@ def collect(now: datetime, fetch=get):
                 continue
             elif src["type"] == "kadocomi":
                 items = parse_kadocomi_new(fetch(src["base"] + "/new"))
+            elif src["type"] == "nettai":
+                items = parse_nettai_top(fetch(src["base"] + "/"), now)
             elif src["type"] == "coronaex":
                 items = parse_coronaex_top(fetch(src["base"] + "/"))
             elif src["type"] == "comici":
