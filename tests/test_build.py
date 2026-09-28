@@ -23,6 +23,8 @@ def fake_fetch(url):
         return (FX / "kurage_top.html").read_text()
     if url == "https://kuragebunch.com/atom/series/12207421983749476406":
         return (FX / "kurage_atom.xml").read_text()
+    if url == "https://pocket.shonenmagazine.com/":
+        return (FX / "magapoke_top.html").read_text()
     if url == "https://comic-walker.com/new":
         return (FX / "kadocomi_new.html").read_text()
     if url == "https://www.ganganonline.com/":
@@ -71,6 +73,9 @@ assert k["free"] and k["ep"] == "第1話前編" and k["date"].startswith("2026-0
 g = by["https://www.ganganonline.com/title/2391/chapter/129246"]
 assert g["free"] and g["date"].startswith("2026-09-28T00:00") and g["img"].startswith("https://www.ganganonline.com/secure/")
 assert next(h for h in health if h["name"] == "ガンガンONLINE")["status"] == "ok"
+
+mp = by["https://pocket.shonenmagazine.com/title/03342/episode/443844"]
+assert mp["free"] and mp["series"] == "弱くて可愛い君が好き" and mp["date"].startswith("2026-09-28T00:00") and mp["img"]
 
 # 新デザイン・予備の読み取り
 new_design = '<ul><li class="UpdateSeriesItem_item_wrapper__w6pxS"><img src="https://x/https%3A%2F%2Fcdn-img.comic-action.com%2Fpublic%2Fseries-thumbnail%2F4855956445099488439-1ffe%3F1"></li></ul>'

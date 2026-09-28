@@ -53,6 +53,7 @@ GIGA_SITES = [
 OTHER_SITES = [
     ("kadocomi", "カドコミ", "カドコミ", "https://comic-walker.com", "#F76707"),
     ("gangan", "ガンガンONLINE", "ガンガン", "https://www.ganganonline.com", "#E03131"),
+    ("magapoke", "マガポケ", "マガポケ", "https://pocket.shonenmagazine.com", "#1864AB"),
 ]
 SITE_META = {k: {"name": n, "short": s, "url": u, "color": c} for k, n, s, u, c in GIGA_SITES + OTHER_SITES}
 
@@ -66,6 +67,7 @@ for k in ATOM_SITES:
     SOURCES.append({"key": k, "name": SITE_META[k]["name"] + "（無料化分）", "type": "giga_atom", "base": SITE_META[k]["url"]})
 
 SOURCES.append({"key": "kadocomi", "name": "カドコミ", "type": "kadocomi", "base": "https://comic-walker.com"})
+SOURCES.append({"key": "magapoke", "name": "マガポケ", "type": "magapoke", "base": "https://pocket.shonenmagazine.com"})
 SOURCES.append({"key": "gangan", "name": "ガンガンONLINE", "type": "gangan", "base": "https://www.ganganonline.com"})
 
 # コミックガルドは無料公開分がRSSに出ないため、トップページからも取得する
@@ -199,6 +201,28 @@ def parse_gangan_top(html: str) -> list[dict]:
     return items
 
 
+def parse_magapoke_top(html: str, now: datetime) -> list[dict]:
+    """マガポケのトップページ「MM/DD○曜日の更新作品」（無料話の更新）。"""
+    soup = BeautifulSoup(html, "html.parser")
+    base = "https://pocket.shonenmagazine.com"
+    items = []
+    for sec in soup.select("section.p-index-update"):
+        head = sec.find(["h2", "h3"])
+        m = re.search(r"(\d{1,2})/(\d{1,2})", head.get_text() if head else "")
+        if not m:
+            continue
+        n = now.astimezone(JST)
+        year = n.year - 1 if int(m[1]) > n.month + 1 else n.year  # 年をまたぐとき
+        date = datetime(year, int(m[1]), int(m[2]), tzinfo=JST)
+        for a in sec.select('a[href*="/episode/"]'):
+            title = a.select_one("h3")
+            img = a.find("img")
+            items.append(dict(site="magapoke", series=title.get_text(strip=True) if title else "",
+                              ep="最新話", author="", url=base + a["href"] if a["href"].startswith("/") else a["href"],
+                              date=date.isoformat(), free=True, img=img.get("src", "") if img else ""))
+    return items
+
+
 # ---------- 作品別フィード（無料化した話を拾う） ----------
 ATOM_NS = "{http://www.w3.org/2005/Atom}"
 SERIES_ID_RE = re.compile(r"series-[a-z-]*thumbnail[a-z-]*(?:/|%2F)(\d{10,})-")
@@ -288,6 +312,8 @@ def collect(now: datetime, fetch=get):
                 continue
             elif src["type"] == "kadocomi":
                 items = parse_kadocomi_new(fetch(src["base"] + "/new"))
+            elif src["type"] == "magapoke":
+                items = parse_magapoke_top(fetch(src["base"] + "/"), now)
             elif src["type"] == "gangan":
                 items = parse_gangan_top(fetch(src["base"] + "/"))
             else:
@@ -352,6 +378,14 @@ def main() -> int:
     items, health = collect(now)
     render(items, health, now)
     notify(health)
+    # 未対応サイトの診断：survey_targets.json があり、手動実行（Run workflow）のときだけ
+    if (ROOT / "survey_targets.json").exists() and os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch":
+        try:
+            sys.path.insert(0, str(Path(__file__).resolve().parent))
+            import survey
+            survey.run()
+        except Exception:
+            traceback.print_exc()
     for h in health:
         print(f"[{h['status']:5}] {h['name']}: {h['count']}件 {h['message']}")
     # 全滅のときだけ失敗扱い（前回のページを残す）
