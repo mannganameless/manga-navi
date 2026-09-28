@@ -10,6 +10,7 @@ import json
 import os
 import re
 import sys
+import time
 import traceback
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
@@ -25,14 +26,36 @@ UA = "MangaKoshinNavi/1.0 (+https://github.com/)"  # 公開後、自分のサイ
 GIGA_NS = "{https://gigaviewer.com}"
 STALE_DAYS = 7  # これ以上新着がなければ「要確認」
 
-# 取得元の一覧。サイトを増やすときはここに足す
-SOURCES = [
-    {"key": "jump", "name": "少年ジャンプ＋", "type": "giga_rss", "base": "https://shonenjumpplus.com"},
-    {"key": "gardo", "name": "コミックガルド", "type": "giga_rss", "base": "https://comic-gardo.com"},
-    {"key": "gardo", "name": "コミックガルド（無料公開分）", "type": "gardo_top", "base": "https://comic-gardo.com"},
-    {"key": "earthstar", "name": "コミックアース・スター", "type": "giga_rss", "base": "https://comic-earthstar.com"},
-    {"key": "days", "name": "コミックDAYS", "type": "giga_rss", "base": "https://comic-days.com"},
+# 対応サイトの一覧。GigaViewer（はてな）系のサイトは1行足すだけで追加できる
+# (キー, 表示名, 短い名前, URL, 色)
+GIGA_SITES = [
+    ("jump", "少年ジャンプ＋", "ジャンプ＋", "https://shonenjumpplus.com", "#E8590C"),
+    ("tonari", "となりのヤングジャンプ", "となりのYJ", "https://www.tonarinoyj.jp", "#D9480F"),
+    ("webry", "サンデーうぇぶり", "うぇぶり", "https://www.sunday-webry.com", "#F08C00"),
+    ("days", "コミックDAYS", "DAYS", "https://comic-days.com", "#1C7ED6"),
+    ("gardo", "コミックガルド", "ガルド", "https://comic-gardo.com", "#C2255C"),
+    ("earthstar", "コミックアース・スター", "アース・スター", "https://comic-earthstar.com", "#5C940D"),
+    ("kurage", "くらげバンチ", "くらげ", "https://kuragebunch.com", "#0C8599"),
+    ("bunchkai", "コミックバンチKai", "バンチKai", "https://comicbunch-kai.com", "#E03131"),
+    ("zenon", "ゼノン編集部", "ゼノン", "https://comic-zenon.com", "#495057"),
+    ("magcomi", "マグコミ", "マグコミ", "https://magcomi.com", "#7048E8"),
+    ("action", "webアクション", "アクション", "https://comic-action.com", "#F76707"),
+    ("trail", "コミックトレイル", "トレイル", "https://comic-trail.com", "#2F9E44"),
+    ("border", "コミックボーダー", "ボーダー", "https://comicborder.com", "#364FC7"),
+    ("feel", "FEEL web", "FEEL", "https://feelweb.jp", "#D6336C"),
+    ("ogyaaa", "COMIC OGYAAA!!", "OGYAAA", "https://comic-ogyaaa.com", "#AE3EC9"),
+    ("seasons", "Seasons", "Seasons", "https://comic-seasons.com", "#66A80F"),
+    ("ichijin", "一迅プラス", "一迅プラス", "https://ichicomi.com", "#1971C2"),
+    ("yours", "COMIC Y-OURS", "Y-OURS", "https://comic-y-ours.com", "#E64980"),
 ]
+SITE_META = {k: {"name": n, "short": s, "url": u, "color": c} for k, n, s, u, c in GIGA_SITES}
+
+SOURCES = [{"key": k, "name": n, "type": "giga_rss", "base": u} for k, n, s, u, c in GIGA_SITES]
+# コミックガルドは無料公開分がRSSに出ないため、トップページからも取得する
+SOURCES.insert(5, {"key": "gardo", "name": "コミックガルド（無料公開分）", "type": "gardo_top", "base": "https://comic-gardo.com"})
+
+# アクセス解析（Cloudflare Web Analytics）のトークン。リポジトリ直下の analytics_token.txt に書く
+TOKEN_FILE = ROOT / "analytics_token.txt"
 
 
 def get(url: str) -> str:
@@ -131,6 +154,7 @@ def collect(now: datetime, fetch=get):
             h.update(status="error", message=f"{type(e).__name__}: {e}")
             traceback.print_exc()
         health.append(h)
+        time.sleep(1)  # 相手のサーバーに負担をかけないよう間隔をあける
 
     # 同じURLが複数の取得元にあれば「無料」を優先
     merged: dict[str, dict] = {}
@@ -160,7 +184,10 @@ def notify(health: list[dict]) -> None:
 
 def render(items, health, now: datetime) -> None:
     tpl = (ROOT / "templates" / "index.html").read_text(encoding="utf-8")
-    payload = json.dumps({"items": items, "health": health, "generated": now.isoformat()}, ensure_ascii=False)
+    token = TOKEN_FILE.read_text(encoding="utf-8").strip() if TOKEN_FILE.exists() else ""
+    token = re.sub(r"[^0-9A-Za-z]", "", token)  # 念のため英数字だけにする
+    payload = json.dumps({"items": items, "health": health, "sites": SITE_META, "analytics": token,
+                          "generated": now.isoformat()}, ensure_ascii=False)
     payload = payload.replace("</", "<\\/")  # scriptタグの途中終了を防ぐ
     out = ROOT / "site"
     out.mkdir(exist_ok=True)

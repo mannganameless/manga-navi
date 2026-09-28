@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>マンガ更新ナビ｜公式Web漫画の無料更新まとめ</title>
-<meta name="description" content="少年ジャンプ＋、コミックガルド、コミックアース・スター、コミックDAYSの最新話と無料公開を1ページで確認できます。">
+<meta name="description" content="少年ジャンプ＋、サンデーうぇぶり、となりのヤングジャンプ、コミックDAYSなど18の公式Web漫画サイトの最新話と無料公開を1ページで確認できます。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
@@ -15,7 +15,6 @@
   --new:#D6336C; --new-ink:#FFFFFF;
   --free:#1D7A33; --free-bg:#DFF2E4; --paid:#8A5700; --paid-bg:#FBEBCB;
   --warn:#A8620A; --warn-bg:#FFF3DF; --ok:#2B8A3E; --star:#F0A500;
-  --jump:#E8590C; --days:#1C7ED6; --gardo:#C2255C; --earthstar:#5C940D;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
@@ -24,7 +23,6 @@
   --new:#FF6B9A; --new-ink:#2A0714;
   --free:#6BDB80; --free-bg:#1B3322; --paid:#F4B860; --paid-bg:#34270E;
   --warn:#F2B35A; --warn-bg:#33270F; --ok:#69DB7C; --star:#FFC940;
-  --jump:#FF8A4C; --days:#5AAEFF; --gardo:#F06595; --earthstar:#94D82D;
   color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#101216; --surface:#191C22; --surface2:#1F232A; --ink:#ECEEF3; --muted:#9BA2B0; --line:#2C313C;
@@ -32,7 +30,6 @@
   --new:#FF6B9A; --new-ink:#2A0714;
   --free:#6BDB80; --free-bg:#1B3322; --paid:#F4B860; --paid-bg:#34270E;
   --warn:#F2B35A; --warn-bg:#33270F; --ok:#69DB7C; --star:#FFC940;
-  --jump:#FF8A4C; --days:#5AAEFF; --gardo:#F06595; --earthstar:#94D82D;
   color-scheme:dark;}
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -71,6 +68,7 @@ header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-betw
 .tab{flex:none;border:0;background:none;padding:8px 12px 9px;cursor:pointer;font-size:14px;font-weight:700;color:var(--muted);border-bottom:3px solid transparent;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .tab .dot{width:8px;height:8px;border-radius:50%}
 .tab .c{font-size:11px;font-weight:500;background:var(--surface2);border-radius:999px;padding:0 6px;color:var(--muted)}
+.tab.zero{opacity:.55}
 .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:2px;gap:2px}
@@ -173,6 +171,8 @@ footer{margin-top:24px;color:var(--muted);font-size:12px;line-height:1.8}
 .gt{border-collapse:collapse;width:100%;font-size:14px}
 .gt th,.gt td{border-bottom:1px solid var(--line);padding:6px 4px;text-align:left}
 .gt th{color:var(--muted);font-size:12px}
+.tw{overflow-x:auto}
+.gt a{color:var(--accent)}
 .note{font-size:13px;color:var(--muted);margin-top:8px!important}
 footer.mini{margin-top:36px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted)}
 footer.mini a{color:var(--accent);font-weight:700}
@@ -239,7 +239,7 @@ footer.mini a{color:var(--accent);font-weight:700}
 
     <div class="gcard">
       <h3>このサイトでできること</h3>
-      <p>少年ジャンプ＋・コミックガルド・コミックアース・スター・コミックDAYSの更新を、1ページでまとめて確認できます。各サイトを1つずつ見に行かなくても、「今日どの作品が無料で読めるか」がすぐにわかります。作品名やサムネイルを押すと、公式サイトのその話が開きます。</p>
+      <p><span id="siteCount"></span>の公式Web漫画サイトの更新を、1ページでまとめて確認できます。各サイトを1つずつ見に行かなくても、「今日どの作品が無料で読めるか」がすぐにわかります。作品名やサムネイルを押すと、公式サイトのその話が開きます。</p>
     </div>
 
     <div class="gcard">
@@ -275,14 +275,8 @@ footer.mini a{color:var(--accent);font-weight:700}
     </div>
 
     <div class="gcard">
-      <h3>各サイトの更新時刻の目安</h3>
-      <table class="gt">
-        <tr><th>サイト</th><th>主な更新時刻</th></tr>
-        <tr><td>少年ジャンプ＋</td><td>毎日 0:00</td></tr>
-        <tr><td>コミックガルド</td><td>毎日 12:00（先読みと無料公開）</td></tr>
-        <tr><td>コミックアース・スター</td><td>18:00ごろ</td></tr>
-        <tr><td>コミックDAYS</td><td>0:00／12:00</td></tr>
-      </table>
+      <h3>対応サイトと更新時刻の目安</h3>
+      <div class="tw"><table class="gt" id="timeTable"></table></div>
       <p class="note">このサイトは1日3回（0時・12時・18時の少しあと）に情報を集めています。公式サイトの更新から反映まで、数分〜数十分かかることがあります。</p>
     </div>
 
@@ -291,7 +285,7 @@ footer.mini a{color:var(--accent);font-weight:700}
       <dl>
         <dt>お気に入りや既読が消えました</dt><dd>お気に入り・既読・前回の訪問日時は、お使いのブラウザの中にだけ保存しています。別の端末やブラウザ、シークレットモードでは引き継がれません。</dd>
         <dt>「無料」と出ていたのに有料でした</dt><dd>無料期間が終わった可能性があります。実際の料金は各公式サイトでご確認ください。</dd>
-        <dt>ほかのサイトにも対応しますか</dt><dd>カドコミ・アルファポリスなどを準備中です。</dd>
+        <dt>ほかのサイトにも対応しますか</dt><dd>順次追加しています。カドコミ・マガポケなども対応を検討中です。</dd>
       </dl>
     </div>
 
@@ -315,12 +309,9 @@ const NOW = new Date(PAYLOAD.generated);
 // ===== 設定 =====
 const NAMES = [["マンガ","更新","ナビ"],["きょうのマンガ","更新",""],["マンガ","更新","君"]];
 const SHOW_TRIAL = true; // サイト名が決まったら false にする
-const SITES = {
-  jump:{name:"少年ジャンプ＋",short:"ジャンプ＋",color:"var(--jump)",g:["#E8590C","#B8430A"]},
-  gardo:{name:"コミックガルド",short:"ガルド",color:"var(--gardo)",g:["#C2255C","#8F1B44"]},
-  earthstar:{name:"コミックアース・スター",short:"アース・スター",color:"var(--earthstar)",g:["#5C940D","#3E6A07"]},
-  days:{name:"コミックDAYS",short:"DAYS",color:"var(--days)",g:["#1C7ED6","#135FA3"]}
-};
+// サイト情報はプログラム側（build.py）から受け取る
+function shade(hex,f){const n=parseInt(hex.slice(1),16);const c=[n>>16,(n>>8)&255,n&255].map(v=>Math.round(v*f));return "#"+c.map(v=>v.toString(16).padStart(2,"0")).join("");}
+const SITES = Object.fromEntries(Object.entries(PAYLOAD.sites||{}).map(([k,s])=>[k,{...s,g:[s.color,shade(s.color,.72)]}]));
 
 // ===== 保存（ブラウザ内のみ） =====
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
@@ -424,8 +415,8 @@ const block=list=>state.view==="card"?`<div class="grid">${list.map(card).join("
 function render(){
   // サイトタブ（件数つき）
   const cnt=k=>DATA.filter(r=>(k==="all"||r.site===k)&&(state.mode==="all"||(state.mode==="free")===r.free)&&dayKey(r.date)===todayKey).length;
-  document.getElementById("tabs").innerHTML=[["all","すべて",null],...Object.entries(SITES).map(([k,s])=>[k,s.name,s.color])]
-    .map(([k,l,c])=>`<button type="button" class="tab" role="tab" aria-selected="${state.site===k}" data-site="${k}">${c?`<span class="dot" style="background:${c}"></span>`:""}${l}<span class="c" title="今日の件数">${cnt(k)}</span></button>`).join("");
+  document.getElementById("tabs").innerHTML=[["all","すべて",null],...Object.entries(SITES).sort((a,b)=>cnt(b[0])-cnt(a[0])).map(([k,s])=>[k,s.name,s.color])]
+    .map(([k,l,c])=>`<button type="button" class="tab${k!=="all"&&!cnt(k)?" zero":""}" role="tab" aria-selected="${state.site===k}" data-site="${k}">${c?`<span class="dot" style="background:${c}"></span>`:""}${l}<span class="c" title="今日の件数">${cnt(k)}</span></button>`).join("");
   document.querySelectorAll("#tabs .tab").forEach(b=>b.onclick=()=>{state.site=b.dataset.site;render();});
 
   // まとめ数値
@@ -462,6 +453,15 @@ function bind(){
 }
 function saveReads(){const arr=[...reads].slice(-3000);store.set("reads",arr);}
 render();
+// 使い方ページ：対応サイト数と、実データから求めた主な更新時刻
+(function(){const ks=Object.keys(SITES);document.getElementById("siteCount").textContent=ks.length+"つ";
+  const rows=ks.map(k=>{const c={};DATA.filter(r=>r.site===k&&r.free).forEach(r=>{const t=hm(r.date);c[t]=(c[t]||0)+1;});
+    const top=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]).sort().join("／")||"-";
+    return `<tr><td><span class="site"><span class="dot" style="background:${SITES[k].color}"></span><a href="${esc(SITES[k].url)}" target="_blank" rel="noopener">${esc(SITES[k].name)}</a></span></td><td>${top}</td></tr>`;});
+  document.getElementById("timeTable").innerHTML="<tr><th>サイト</th><th>主な無料更新時刻</th></tr>"+rows.join("");})();
+// アクセス解析（Cloudflare Web Analytics。Cookieを使わない）
+if(PAYLOAD.analytics){const s=document.createElement("script");s.defer=true;s.src="https://static.cloudflareinsights.com/beacon.min.js";
+  s.setAttribute("data-cf-beacon",JSON.stringify({token:PAYLOAD.analytics}));document.head.appendChild(s);}
 // 「使い方」ページの切り替え（URLの #guide で開く）
 function route(){const g=location.hash==="#guide";document.getElementById("guide").hidden=!g;document.getElementById("home").hidden=g;
   document.querySelector(".bar").hidden=g;const hb=document.getElementById("helpBtn");hb.href=g?"#":"#guide";hb.classList.toggle("backmode",g);hb.querySelector(".q").textContent=g?"←":"?";hb.querySelector(".lbl").textContent=g?"一覧にもどる":"使い方";setTimeout(()=>scrollTo(0,0),0);}

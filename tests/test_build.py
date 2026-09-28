@@ -4,6 +4,7 @@ from datetime import datetime
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import build
+build.time.sleep = lambda *_: None
 
 FX = Path(__file__).parent / "fixtures"
 NOW = datetime(2026, 9, 28, 10, 0, tzinfo=build.JST)
@@ -42,11 +43,12 @@ st = {h["name"]: h["status"] for h in health}
 assert st["少年ジャンプ＋"] == "ok"
 assert st["コミックガルド（無料公開分）"] == "ok"
 assert st["コミックアース・スター"] == "error"   # 取得失敗 → 通知対象
+assert st["くらげバンチ"] == "error"
 assert st["コミックDAYS"] == "stale"            # 7日以上新着なし → 通知対象
 
 build.render(items, health, NOW)
 html = (build.ROOT / "site" / "index.html").read_text()
-assert "__PAYLOAD__" not in html and "封神演義外伝" in html
+assert "__PAYLOAD__" not in html and "封神演義外伝" in html and "くらげバンチ" in html
 print("すべてのテストに合格しました")
 for h in health:
     print(h["status"], h["name"], h["count"], h["message"])
