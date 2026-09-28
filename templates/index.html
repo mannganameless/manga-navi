@@ -151,13 +151,17 @@ details.st summary{cursor:pointer;font-weight:700}
 footer{margin-top:24px;color:var(--muted);font-size:12px;line-height:1.8}
 
 .home-link{text-decoration:none;color:inherit}
-.help{font-size:13px;font-weight:700;color:var(--accent);text-decoration:none;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:4px 12px}
-.help:hover{border-color:var(--accent)}
+.help{display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:8px 18px 8px 10px;text-decoration:none;box-shadow:0 2px 8px rgba(43,76,224,.28);white-space:nowrap}
+.help .q{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--accent-ink);color:var(--accent);font-size:14px;font-weight:900;line-height:1}
+.help:hover{filter:brightness(1.08)}
+.help.backmode .q{font-size:15px}
 .alert{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn);border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:12px}
 .alert a{color:inherit;font-weight:700}
 #guide{max-width:760px;margin:0 auto}
 .gh{font-size:24px;margin:8px 0 14px}
-.back{display:inline-block;font-size:14px;font-weight:700;color:var(--accent);text-decoration:none;margin-top:6px}
+.back{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:420px;font-size:16px;font-weight:700;color:var(--accent-ink);background:var(--accent);border-radius:12px;padding:13px 20px;text-decoration:none;margin:6px 0 18px;box-shadow:0 2px 8px rgba(43,76,224,.28)}
+.back:hover{filter:brightness(1.08)}
+.back .arr{font-size:20px;line-height:1}
 .gcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px}
 .gcard h3{margin:0 0 8px;font-size:17px}
 .gcard p{margin:0 0 8px}
@@ -193,7 +197,7 @@ footer.mini a{color:var(--accent);font-weight:700}
     <a class="home-link" href="#" aria-label="トップへ"><h1 class="logo" id="logo"></h1></a>
     <div class="hmeta">
       <span id="gen"></span>
-      <a class="help" href="#guide">使い方</a>
+      <a class="help" id="helpBtn" href="#guide"><span class="q">?</span><span class="lbl">使い方</span></a>
       <div class="view" role="group" aria-label="表示の形">
         <button type="button" id="vCard" aria-pressed="false"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>カード</button>
         <button type="button" id="vList" aria-pressed="false"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="2" width="4" height="3" rx="1"/><rect x="7" y="2.5" width="8" height="2" rx="1"/><rect x="1" y="6.5" width="4" height="3" rx="1"/><rect x="7" y="7" width="8" height="2" rx="1"/><rect x="1" y="11" width="4" height="3" rx="1"/><rect x="7" y="11.5" width="8" height="2" rx="1"/></svg>リスト</button>
@@ -230,7 +234,7 @@ footer.mini a{color:var(--accent);font-weight:700}
   </div>
 
   <section id="guide" hidden>
-    <a class="back" href="#">← 更新一覧にもどる</a>
+    <a class="back" href="#"><span class="arr">←</span>更新一覧にもどる</a>
     <h2 class="gh">使い方</h2>
 
     <div class="gcard">
@@ -297,7 +301,7 @@ footer.mini a{color:var(--accent);font-weight:700}
       <p>「無料」「先読み（有料）」は、公式RSSの無料期間情報と、コミックガルドはトップページの曜日別欄から判定しています。</p>
       <details class="st" id="stBox"><summary>取得元の状態</summary><div class="stgrid" id="stGrid"></div></details>
     </div>
-    <a class="back" href="#">← 更新一覧にもどる</a>
+    <a class="back" href="#"><span class="arr">←</span>更新一覧にもどる</a>
   </section>
 
   <footer class="mini"><a href="#guide">使い方・このサイトについて</a><span>漫画本編は掲載していません。料金は各公式サイトでご確認ください。</span></footer>
@@ -460,7 +464,7 @@ function saveReads(){const arr=[...reads].slice(-3000);store.set("reads",arr);}
 render();
 // 「使い方」ページの切り替え（URLの #guide で開く）
 function route(){const g=location.hash==="#guide";document.getElementById("guide").hidden=!g;document.getElementById("home").hidden=g;
-  document.querySelector(".bar").hidden=g;setTimeout(()=>scrollTo(0,0),0);}
+  document.querySelector(".bar").hidden=g;const hb=document.getElementById("helpBtn");hb.href=g?"#":"#guide";hb.classList.toggle("backmode",g);hb.querySelector(".q").textContent=g?"←":"?";hb.querySelector(".lbl").textContent=g?"一覧にもどる":"使い方";setTimeout(()=>scrollTo(0,0),0);}
 addEventListener("hashchange",route);route();
 </script>
 </body>
