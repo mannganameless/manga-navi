@@ -631,7 +631,15 @@ def render(items, health, now: datetime) -> None:
     tpl = (ROOT / "templates" / "index.html").read_text(encoding="utf-8")
     token = TOKEN_FILE.read_text(encoding="utf-8").strip() if TOKEN_FILE.exists() else ""
     token = re.sub(r"[^0-9A-Za-z]", "", token)  # 念のため英数字だけにする
+    ranking = {}
+    rf = ROOT / "ranking.json"  # サーバー移行後、クリック集計から自動で作られる予定
+    if rf.exists():
+        try:
+            ranking = json.loads(rf.read_text(encoding="utf-8"))
+        except ValueError:
+            print("ranking.json が読めません")
     payload = json.dumps({"items": items, "health": health, "sites": SITE_META, "analytics": token,
+                          "ranking": ranking, "clickEndpoint": os.environ.get("CLICK_ENDPOINT", ""),
                           "generated": now.isoformat()}, ensure_ascii=False)
     payload = payload.replace("</", "<\\/")  # scriptタグの途中終了を防ぐ
     out = ROOT / "site"

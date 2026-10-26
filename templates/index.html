@@ -156,7 +156,13 @@ footer{margin-top:24px;color:var(--muted);font-size:12px;line-height:1.8}
 .help.backmode .q{font-size:15px}
 .alert{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn);border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:12px}
 .alert a{color:inherit;font-weight:700}
+[hidden]{display:none!important}
 #guide{max-width:760px;margin:0 auto}
+.vtabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:0 0 14px}
+.vtabs a{display:inline-flex;align-items:center;gap:6px;padding:9px 16px 10px;font-size:15px;font-weight:700;color:var(--muted);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-1px}
+.vtabs a svg{width:15px;height:15px}
+.vtabs a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--accent)}
+.vtabs a:hover{color:var(--ink)}
 .gh{font-size:24px;margin:8px 0 14px}
 .back{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:420px;font-size:16px;font-weight:700;color:var(--accent-ink);background:var(--accent);border-radius:12px;padding:13px 20px;text-decoration:none;margin:6px 0 18px;box-shadow:0 2px 8px rgba(43,76,224,.28)}
 .back:hover{filter:brightness(1.08)}
@@ -175,6 +181,19 @@ footer{margin-top:24px;color:var(--muted);font-size:12px;line-height:1.8}
 .tw{overflow-x:auto}
 .gt a{color:var(--accent)}
 .note{font-size:13px;color:var(--muted);margin-top:8px!important}
+.rank{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+.rank-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.rank-head h2{margin:0;font-size:16px}
+.rank-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 20px;counter-reset:r}
+.rank-list li{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
+.rank-list .no{font-size:18px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;color:var(--muted)}
+.rank-list li:nth-child(1) .no{color:#D4A017}.rank-list li:nth-child(2) .no{color:#8E9AAF}.rank-list li:nth-child(3) .no{color:#B87333}
+.rank-list a{font-weight:700;font-size:14px;color:inherit;text-decoration:none;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank-list a:hover{color:var(--accent)}
+.rank-list .sub{font-size:11px;color:var(--muted)}
+.rank-list .cnt{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.rank-empty{grid-column:1/-1;padding:14px 4px;color:var(--muted);font-size:13px;border:0!important;display:block!important}
+.rank-note{margin:6px 0 0;font-size:11px;color:var(--muted)}
 footer.mini{margin-top:36px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted)}
 footer.mini a{color:var(--accent);font-weight:700}
 .card a.cover img.rk,.li a.th img.rk{object-fit:contain;background:var(--surface2)}
@@ -184,6 +203,7 @@ footer.mini a{color:var(--accent);font-weight:700}
 .buy:hover{text-decoration:underline}
 @media (max-width:640px){.gcard dl{grid-template-columns:1fr;gap:2px}.gcard dd{margin-bottom:8px}}
 @media (max-width:640px){
+  .rank-list{grid-template-columns:1fr}
   .bar{position:static}
   .row{gap:6px}
   .logo{font-size:22px}
@@ -215,11 +235,29 @@ footer.mini a{color:var(--accent);font-weight:700}
   <div class="alert" id="alert" hidden>一部のサイトで情報を取得できていません。<a href="#guide">詳しく</a></div>
   <div class="trial" id="trial"><span>サイト名のお試し：</span></div>
 
+  <nav class="vtabs" aria-label="表示の切り替え">
+    <a href="#" id="vtHome" aria-current="page">更新一覧</a>
+    <a href="#ranking" id="vtRank"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M3 2h10v2a3 3 0 0 1-2.2 2.9A3.5 3.5 0 0 1 9 9.3V11h2v2H5v-2h2V9.3a3.5 3.5 0 0 1-1.8-2.4A3 3 0 0 1 3 4z"/></svg>ランキング</a>
+  </nav>
+
   <div class="summary">
     <button type="button" class="sum new" id="sNew" aria-pressed="false"><span class="k">前回から増えた更新</span><span class="v" id="nNew">0</span></button>
     <button type="button" class="sum fav" id="sFav" aria-pressed="false"><span class="k">★お気に入りの更新</span><span class="v" id="nFav">0</span></button>
     <button type="button" class="sum" id="sUnread" aria-pressed="false"><span class="k">今日の無料・未読</span><span class="v" id="nUnread">0</span></button>
   </div>
+
+  <section class="rank" id="rank" aria-labelledby="rankH" hidden>
+    <div class="rank-head">
+      <h2 id="rankH">よく読まれている作品</h2>
+      <div class="seg" id="rankTabs" role="group" aria-label="集計期間">
+        <button type="button" data-v="monthly" aria-pressed="true">月間</button>
+        <button type="button" data-v="weekly" aria-pressed="false">週間</button>
+        <button type="button" data-v="daily" aria-pressed="false">日間</button>
+      </div>
+    </div>
+    <ol class="rank-list" id="rankList"></ol>
+    <p class="rank-note" id="rankNote"></p>
+  </section>
 
   <div class="bar">
     <div class="tabs" role="tablist" id="tabs"></div>
@@ -276,6 +314,7 @@ footer.mini a{color:var(--accent);font-weight:700}
         <dt><span class="b free">無料</span><span class="b paid">先読み・有料</span></dt><dd>無料で読める話か、有料の先読みかを表します。</dd>
         <dt><span class="k">★</span> お気に入り</dt><dd>押した作品の今日の更新が、ページの一番上にまとまって表示されます。</dd>
         <dt><span class="k">✓</span> 既読</dt><dd>押すと薄く表示されます。公式ページを開いた話は自動で既読になります。「既読を隠す」で未読だけにできます。</dd>
+        <dt>ランキング</dt><dd>上の「ランキング」タブで見られます。このサイトから作品ページが開かれた回数のランキングです。月間（過去30日）・週間・日間を切り替えられます。回数だけを数えていて、誰が開いたかは記録していません。</dd>
         <dt>上の3つの数字</dt><dd>「前回から増えた更新」「お気に入りの更新」「今日の無料・未読」の件数です。押すとその分だけに絞り込めます。もう一度押すと元に戻ります。</dd>
       </dl>
     </div>
@@ -463,6 +502,24 @@ function bind(){
 }
 function saveReads(){const arr=[...reads].slice(-3000);store.set("reads",arr);}
 render();
+// ===== ランキング（このサイトでよく読まれた作品） =====
+const RANK=PAYLOAD.ranking||{};
+let rankPeriod="monthly";
+function renderRank(){
+  const list=(RANK[rankPeriod]||[]).slice(0,10), box=document.getElementById("rankList");
+  const label={monthly:"過去30日",weekly:"過去7日",daily:"過去24時間"}[rankPeriod];
+  if(!list.length){box.innerHTML=`<li class="rank-empty">集計中です。読まれた回数が集まると、ここに${label}のランキングが表示されます。</li>`;}
+  else box.innerHTML=list.map((r,i)=>{const s=SITES[r.site]||{name:r.site,color:"var(--muted)"};
+    return `<li><span class="no">${i+1}</span><div style="min-width:0"><a href="${esc(r.url)}" target="_blank" rel="noopener" data-open="${esc(r.url)}" data-rk-series="${esc(r.series)}" data-rk-site="${esc(r.site)}">${esc(r.series)}</a><span class="sub"><span class="site"><span class="dot" style="background:${s.color}"></span>${esc(s.name)}</span></span></div><span class="cnt">${Number(r.count).toLocaleString()}回</span></li>`;}).join("");
+  document.getElementById("rankNote").textContent=list.length?`${label}に、このサイトから作品ページが開かれた回数の順です。`+(RANK.updated?`（集計 ${RANK.updated}）`:""):"";
+  document.querySelectorAll("#rankTabs button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===rankPeriod));
+}
+document.querySelectorAll("#rankTabs button").forEach(b=>b.onclick=()=>{rankPeriod=b.dataset.v;renderRank();});
+renderRank();
+// 作品ページが開かれたことを記録（記録先が設定されたときだけ。個人を特定する情報は送らない）
+document.addEventListener("click",e=>{const a=e.target.closest("a[data-open]");if(!a||!PAYLOAD.clickEndpoint)return;
+  const it=DATA.find(r=>r.url===a.dataset.open);const body=JSON.stringify({url:a.dataset.open,series:it?it.series:(a.dataset.rkSeries||""),site:it?it.site:(a.dataset.rkSite||"")});
+  try{navigator.sendBeacon(PAYLOAD.clickEndpoint,new Blob([body],{type:"application/json"}));}catch(err){}},true);
 // 使い方ページ：対応サイト数と、実データから求めた主な更新時刻
 (function(){const ks=Object.keys(SITES);document.getElementById("siteCount").textContent=ks.length+"つ";
   const rows=ks.map(k=>{const c={};DATA.filter(r=>r.site===k&&r.free).forEach(r=>{const t=hm(r.date);c[t]=(c[t]||0)+1;});
@@ -473,8 +530,9 @@ render();
 if(PAYLOAD.analytics){const s=document.createElement("script");s.defer=true;s.src="https://static.cloudflareinsights.com/beacon.min.js";
   s.setAttribute("data-cf-beacon",JSON.stringify({token:PAYLOAD.analytics}));document.head.appendChild(s);}
 // 「使い方」ページの切り替え（URLの #guide で開く）
-function route(){const g=location.hash==="#guide";document.getElementById("guide").hidden=!g;document.getElementById("home").hidden=g;
-  document.querySelector(".bar").hidden=g;const hb=document.getElementById("helpBtn");hb.href=g?"#":"#guide";hb.classList.toggle("backmode",g);hb.querySelector(".q").textContent=g?"←":"?";hb.querySelector(".lbl").textContent=g?"一覧にもどる":"使い方";setTimeout(()=>scrollTo(0,0),0);}
+function route(){const g=location.hash==="#guide",rk=location.hash==="#ranking";document.getElementById("guide").hidden=!g;document.getElementById("home").hidden=g;
+  document.querySelector(".bar").hidden=g||rk;["out","pin"].forEach(id=>document.getElementById(id).hidden=rk);document.querySelector(".summary").hidden=rk;document.getElementById("rank").hidden=!rk;
+  if(rk){document.getElementById("vtHome").removeAttribute("aria-current");document.getElementById("vtRank").setAttribute("aria-current","page");}else{document.getElementById("vtHome").setAttribute("aria-current","page");}const hb=document.getElementById("helpBtn");hb.href=g?"#":"#guide";hb.classList.toggle("backmode",g);hb.querySelector(".q").textContent=g?"←":"?";hb.querySelector(".lbl").textContent=g?"一覧にもどる":"使い方";setTimeout(()=>scrollTo(0,0),0);}
 addEventListener("hashchange",route);route();
 </script>
 </body>
