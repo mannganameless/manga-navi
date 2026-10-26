@@ -75,6 +75,7 @@ header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-betw
 .seg button{border:0;background:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .seg.days button{padding:4px 9px}
+.seg.days button.is-today{box-shadow:inset 0 -2px 0 var(--accent)}
 .search{flex:1 1 180px;min-width:0;font:inherit;font-size:14px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
 .tog{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-size:13px;cursor:pointer;white-space:nowrap}
 .tog[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
@@ -367,8 +368,9 @@ const I_READ='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 // ===== 操作部品 =====
 function pressGroup(sel,key){document.querySelectorAll(sel+" button").forEach(b=>b.onclick=()=>{state[key]=b.dataset.v;document.querySelectorAll(sel+" button").forEach(x=>x.setAttribute("aria-pressed",x===b));render();});}
 pressGroup("#mode","mode");
-(function(){const w=document.getElementById("wday");const opts=[["all","全曜日"],...[1,2,3,4,5,6,0].map(i=>[String(i),WD[i]])];
-  w.innerHTML=opts.map(([v,l])=>`<button type="button" data-v="${v}" aria-pressed="${v==="all"}">${l}</button>`).join("");pressGroup("#wday","wd");})();
+(function(){const w=document.getElementById("wday");const tw=String(wdOf(NOW.toISOString()));
+  const opts=[["all","すべての日"],["today","今日"],...[1,2,3,4,5,6,0].map(i=>[String(i),WD[i]])];
+  w.innerHTML=opts.map(([v,l])=>`<button type="button" data-v="${v}" aria-pressed="${v==="all"}"${v===tw?' class="is-today" title="今日の曜日"':''}>${l}</button>`).join("");pressGroup("#wday","wd");})();
 document.getElementById("q").addEventListener("input",e=>{state.q=e.target.value.trim().toLowerCase();render();});
 document.getElementById("hideRead").onclick=e=>{state.hideRead=!state.hideRead;e.currentTarget.setAttribute("aria-pressed",state.hideRead);render();};
 function setView(v){state.view=v;store.set("view",v);document.getElementById("vCard").setAttribute("aria-pressed",v==="card");document.getElementById("vList").setAttribute("aria-pressed",v==="list");}
@@ -383,7 +385,7 @@ for(const [id,key] of [["sNew","new"],["sFav","fav"],["sUnread","unread"]]){
 // ===== 絞り込み =====
 function base(r){return (state.site==="all"||r.site===state.site)
   &&(state.mode==="all"||(state.mode==="free")===r.free)
-  &&(state.wd==="all"||String(wdOf(r.date))===state.wd)
+  &&(state.wd==="all"||(state.wd==="today"?dayKey(r.date)===todayKey:String(wdOf(r.date))===state.wd))
   &&(!state.q||r.series.toLowerCase().includes(state.q)||(r.author||"").toLowerCase().includes(state.q))
   &&(!state.hideRead||!reads.has(r.url));}
 function onlyF(r){return !state.only||(state.only==="new"&&isNew(r))||(state.only==="fav"&&favs.has(r.series))
