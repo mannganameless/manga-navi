@@ -176,6 +176,11 @@ footer{margin-top:24px;color:var(--muted);font-size:12px;line-height:1.8}
 .note{font-size:13px;color:var(--muted);margin-top:8px!important}
 footer.mini{margin-top:36px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted)}
 footer.mini a{color:var(--accent);font-weight:700}
+.card a.cover img.rk,.li a.th img.rk{object-fit:contain;background:var(--surface2)}
+.prmark{position:absolute;right:4px;bottom:4px;z-index:2;font-size:10px;font-weight:700;background:rgba(0,0,0,.6);color:#fff;border-radius:3px;padding:0 4px}
+.prmark.in{position:static;margin-left:6px;background:var(--muted)}
+.buy{align-self:flex-start;font-size:12px;font-weight:700;color:var(--accent);text-decoration:none;margin-top:4px}
+.buy:hover{text-decoration:underline}
 @media (max-width:640px){.gcard dl{grid-template-columns:1fr;gap:2px}.gcard dd{margin-bottom:8px}}
 @media (max-width:640px){
   .bar{position:static}
@@ -298,7 +303,7 @@ footer.mini a{color:var(--accent);font-weight:700}
     <a class="back" href="#"><span class="arr">←</span>更新一覧にもどる</a>
   </section>
 
-  <footer class="mini"><a href="#guide">使い方・このサイトについて</a><span>漫画本編は掲載していません。料金は各公式サイトでご確認ください。</span></footer>
+  <footer class="mini"><a href="#guide">使い方・このサイトについて</a><span>漫画本編は掲載していません。料金は各公式サイトでご確認ください。</span><span>「PR」表示の画像・リンクは楽天アフィリエイトを利用しています。</span><a href="https://webservice.rakuten.co.jp/" target="_blank" rel="noopener">Supported by Rakuten Developers</a></footer>
 </div>
 
 <script>
@@ -391,8 +396,11 @@ const gRead=g=>g.urls.every(u=>reads.has(u));
 
 function thumb(g,cls){const[a,b]=SITES[g.site].g;
   const fb=`<span class="fb" style="background:linear-gradient(135deg,${a},${b})">${cls==="cover"?esc(g.series):""}</span>`;
-  const img=g.img?`<img src="${esc(g.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:"";
-  return `<a class="${cls}" href="${esc(g.url)}" target="_blank" rel="noopener" data-open="${esc(g.url)}" tabindex="-1" aria-hidden="true">${fb}${img}</a>`;}
+  const src=g.rk_img||g.img;
+  const img=src?`<img src="${esc(src)}" alt="" loading="lazy" onerror="this.remove()"${g.rk_img?' class="rk"':''}>`:"";
+  const pr=g.rk_img?'<span class="prmark">PR</span>':'';
+  return `<a class="${cls}" href="${esc(g.url)}" target="_blank" rel="noopener" data-open="${esc(g.url)}" tabindex="-1" aria-hidden="true">${fb}${img}${pr}</a>`;}
+function buy(g){return g.buy?`<a class="buy" href="${esc(g.buy)}" target="_blank" rel="noopener sponsored">単行本を楽天で見る<span class="prmark in">PR</span></a>`:"";}
 function badges(g){return `${isNew(g)?'<span class="b new">NEW</span>':""}<span class="b ${g.free?"free":"paid"}">${g.free?"無料":"先読み・有料"}</span>`;}
 function btns(g){const f=favs.has(g.series),rd=gRead(g);
   return `<button type="button" class="ic star" aria-pressed="${f}" aria-label="お気に入り" title="お気に入り" data-fav="${esc(g.series)}">${I_STAR}</button>`+
@@ -403,11 +411,11 @@ function card(g){return `<div class="card${gRead(g)?" isread":""}">${thumb(g,"co
   <div class="tl">${badges(g)}</div><div class="tr">${btns(g)}</div>
   <div class="body"><a class="series" href="${esc(g.url)}" target="_blank" rel="noopener" data-open="${esc(g.url)}">${esc(g.series)}</a>
   <div class="ep">${esc(g.ep)}</div>${g.count>1?`<span class="more">ほか${g.count-1}話も同時公開</span>`:""}
-  <div class="foot">${siteTag(g)}<span>${hm(g.date)}</span></div></div></div>`;}
+  ${buy(g)}<div class="foot">${siteTag(g)}<span>${hm(g.date)}</span></div></div></div>`;}
 function row(g){return `<div class="li${gRead(g)?" isread":""}">${thumb(g,"th")}
   <div class="main"><div class="t1"><a class="series" href="${esc(g.url)}" target="_blank" rel="noopener" data-open="${esc(g.url)}">${esc(g.series)}</a>${badges(g)}</div>
   <div class="ep">${esc(g.ep)}${g.count>1?` <span class="more">ほか${g.count-1}話</span>`:""}</div>
-  <div class="meta">${siteTag(g)}<span>${hm(g.date)}</span>${g.author?`<span>${esc(g.author)}</span>`:""}</div></div>
+  <div class="meta">${siteTag(g)}<span>${hm(g.date)}</span>${g.author?`<span>${esc(g.author)}</span>`:""}</div>${buy(g)}</div>
   <div class="act">${btns(g)}</div></div>`;}
 const block=list=>state.view==="card"?`<div class="grid">${list.map(card).join("")}</div>`:`<div class="list">${list.map(row).join("")}</div>`;
 

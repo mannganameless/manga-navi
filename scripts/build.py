@@ -57,6 +57,8 @@ OTHER_SITES = [
     ("magapoke", "マガポケ", "マガポケ", "https://pocket.shonenmagazine.com", "#1864AB"),
     ("coronaex", "コロナEX", "コロナEX", "https://to-corona-ex.com", "#F59F00"),
     ("nettai", "COMIC熱帯", "熱帯", "https://www.comicnettai.com", "#E8590C"),
+    ("gecchan", "日刊月チャン", "月チャン", "https://nikkangecchan.jp", "#C92A2A"),
+    ("shiori", "栞", "栞", "https://shiori-on.com", "#868E96"),
 ]
 # comici（コミチ）系のサイト。トップページの「本日更新の連載」を読む
 COMICI_SITES = [
@@ -85,6 +87,7 @@ RSS_SITES = [
     ("pachikuri", "パチクリ！", "パチクリ", "https://pachikuri.jp", "#FAB005", "/rss.xml"),
     ("souffle", "Souffle", "Souffle", "https://souffle.life", "#F783AC", "/rss"),
     ("gaugau", "マンガがうがう", "がうがう", "https://gaugau.futabanet.jp", "#FD7E14", "/feed"),
+    ("nanairo", "なないろjp", "なないろ", "https://7iro.jp", "#15AABF", "/rss"),
 ]
 SITE_META = {k: {"name": n, "short": s, "url": u, "color": c} for k, n, s, u, c in GIGA_SITES + OTHER_SITES + COMICI_SITES}
 SITE_META.update({k: {"name": n, "short": s, "url": u, "color": c} for k, n, s, u, c, _ in RSS_SITES})
@@ -99,10 +102,19 @@ for k in ATOM_SITES:
     SOURCES.append({"key": k, "name": SITE_META[k]["name"] + "（無料化分）", "type": "giga_atom", "base": SITE_META[k]["url"]})
 
 SOURCES.append({"key": "kadocomi", "name": "カドコミ", "type": "kadocomi", "base": "https://comic-walker.com"})
-for k, n, s, u, c in COMICI_SITES:
-    SOURCES.append({"key": k, "name": n, "type": "comici", "base": u})
+# 2026年10月：comici系の全サイトが自動アクセスに403（拒否）を返すようになったため一時停止。
+# 運営会社（株式会社コミチ）に問い合わせ中。許可が得られたら True に戻す。
+COMICI_ENABLED = False
+if COMICI_ENABLED:
+    for k, n, s, u, c in COMICI_SITES:
+        SOURCES.append({"key": k, "name": n, "type": "comici", "base": u})
+else:
+    for k, *_ in COMICI_SITES:
+        SITE_META.pop(k, None)
 for k, n, s, u, c, path in RSS_SITES:
     SOURCES.append({"key": k, "name": n, "type": "rss", "base": u, "path": path})
+SOURCES.append({"key": "gecchan", "name": "日刊月チャン", "type": "gecchan", "base": "https://nikkangecchan.jp"})
+SOURCES.append({"key": "shiori", "name": "栞", "type": "shiori", "base": "https://shiori-on.com"})
 SOURCES.append({"key": "nettai", "name": "COMIC熱帯", "type": "nettai", "base": "https://www.comicnettai.com"})
 SOURCES.append({"key": "coronaex", "name": "コロナEX", "type": "coronaex", "base": "https://to-corona-ex.com"})
 SOURCES.append({"key": "magapoke", "name": "マガポケ", "type": "magapoke", "base": "https://pocket.shonenmagazine.com"})
@@ -110,6 +122,9 @@ SOURCES.append({"key": "gangan", "name": "ガンガンONLINE", "type": "gangan",
 
 # コミックガルドは無料公開分がRSSに出ないため、トップページからも取得する
 SOURCES.insert(5, {"key": "gardo", "name": "コミックガルド（無料公開分）", "type": "gardo_top", "base": "https://comic-gardo.com"})
+
+# 出版社サイトの画像（サムネイル）を表示するか。楽天の公式画像に切り替えたため False
+PUBLISHER_IMAGES = False
 
 # アクセス解析（Cloudflare Web Analytics）のトークン。リポジトリ直下の analytics_token.txt に書く
 TOKEN_FILE = ROOT / "analytics_token.txt"
@@ -306,6 +321,56 @@ def parse_nettai_top(html: str, now: datetime) -> list[dict]:
     return items
 
 
+def parse_gecchan_top(html: str, now: datetime) -> list[dict]:
+    """日刊月チャンの作品ラインナップ（各作品の「M.D更新」と最新話リンク）。"""
+    soup = BeautifulSoup(html, "html.parser")
+    base = "https://nikkangecchan.jp"
+    n = now.astimezone(JST)
+    items = []
+    for box in soup.select("div.contentInner"):
+        title = box.select_one("h3")
+        d = box.select_one(".update .date")
+        link = next((a for a in box.select("a[href]") if "最新話" in a.get_text()), None)
+        if not title or not d or not link:
+            continue
+        m = re.match(r"(\d{1,2})\.(\d{1,2})", d.get_text(strip=True))
+        if not m:
+            continue
+        year = n.year - 1 if int(m[1]) > n.month else n.year
+        date = datetime(year, int(m[1]), int(m[2]), tzinfo=JST)
+        if (n - date).days > 14:
+            continue
+        img = box.select_one("img")
+        author = box.select_one(".author")
+        items.append(dict(site="gecchan", series=title.get_text(strip=True), ep="最新話",
+                          author=author.get_text(strip=True) if author else "", url=urljoin(base, link["href"]),
+                          date=date.isoformat(), free=True, img=urljoin(base, img["src"]) if img and img.get("src") else ""))
+    return items
+
+
+def parse_shiori_top(html: str, now: datetime) -> list[dict]:
+    """栞のトップページの作品カード（更新日つき）。"""
+    soup = BeautifulSoup(html, "html.parser")
+    n = now.astimezone(JST)
+    items = []
+    for card in soup.select("article.card"):
+        a = card.select_one("a[href]")
+        tm = card.select_one("time[datetime]")
+        img = card.select_one("img")
+        if not a or not tm:
+            continue
+        try:
+            date = datetime.fromisoformat(tm["datetime"]).replace(tzinfo=JST)
+        except ValueError:
+            continue
+        if (n - date).days > 14:
+            continue
+        items.append(dict(site="shiori", series=(img.get("alt") if img else "") or a["href"].rstrip("/").split("/")[-1],
+                          ep="最新話", author="", url=a["href"], date=date.isoformat(), free=True,
+                          img=img.get("src", "") if img else ""))
+    return items
+
+
 def parse_comici_top(html: str, site: str, base: str, now: datetime) -> list[dict]:
     """comici系サイトのトップページ「本日更新の連載」。作品ページへ案内する。"""
     soup = BeautifulSoup(html, "html.parser")
@@ -424,6 +489,37 @@ def collect_atom(base: str, site: str, now: datetime, fetch) -> tuple[list[dict]
     return items, len(ids)
 
 
+# ---------- 手動登録 ----------
+MANUAL_FILE = ROOT / "manual_entries.csv"
+MANUAL_SITES = {"ファイアCROSS": ("firecross", "https://firecross.jp", "#D9480F")}
+
+
+def load_manual(now: datetime) -> list[dict]:
+    """manual_entries.csv を読む。列：日付,サイト名,作品名,話数,URL,無料(1/0),画像URL"""
+    import csv
+    if not MANUAL_FILE.exists():
+        return []
+    items = []
+    n = now.astimezone(JST)
+    with MANUAL_FILE.open(encoding="utf-8-sig") as f:
+        for row in csv.reader(f):
+            if not row or row[0].startswith("#") or row[0] == "日付" or len(row) < 5:
+                continue
+            row += [""] * (7 - len(row))
+            try:
+                date = datetime.fromisoformat(row[0].strip().replace("/", "-")).replace(tzinfo=JST)
+            except ValueError:
+                print("manual: 日付の形式が読めません", row[0]); continue
+            if (n - date).days > 14:
+                continue
+            site_name = row[1].strip()
+            key, url, color = MANUAL_SITES.get(site_name, ("manual-" + str(abs(hash(site_name)) % 10000), "", "#868E96"))
+            SITE_META.setdefault(key, {"name": site_name, "short": site_name, "url": url, "color": color})
+            items.append(dict(site=key, series=row[2].strip(), ep=row[3].strip(), author="", url=row[4].strip(),
+                              date=date.isoformat(), free=row[5].strip() != "0", img=row[6].strip()))
+    return items
+
+
 # ---------- まとめ ----------
 def collect(now: datetime, fetch=get):
     all_items, health = [], []
@@ -447,6 +543,14 @@ def collect(now: datetime, fetch=get):
                 continue
             elif src["type"] == "kadocomi":
                 items = parse_kadocomi_new(fetch(src["base"] + "/new"))
+            elif src["type"] == "gecchan":
+                items = parse_gecchan_top(fetch(src["base"] + "/"), now)
+                if not items:
+                    h["message"] = "直近2週間の更新なし"; health.append(h); time.sleep(1); continue
+            elif src["type"] == "shiori":
+                items = parse_shiori_top(fetch(src["base"] + "/"), now)
+                if not items:
+                    h["message"] = "直近2週間の更新なし"; health.append(h); time.sleep(1); continue
             elif src["type"] == "nettai":
                 items = parse_nettai_top(fetch(src["base"] + "/"), now)
             elif src["type"] == "coronaex":
@@ -461,7 +565,10 @@ def collect(now: datetime, fetch=get):
                     time.sleep(1)
                     continue
             elif src["type"] == "rss":
-                items = parse_generic_feed(fetch(src["base"] + src["path"]), src["key"], now)
+                xml = fetch(src["base"] + src["path"])
+                items = parse_generic_feed(xml, src["key"], now)
+                if not items and ("<item" in xml or "<entry" in xml):
+                    h["message"] = "直近2週間の更新なし"; health.append(h); time.sleep(1); continue
             elif src["type"] == "magapoke":
                 items = parse_magapoke_top(fetch(src["base"] + "/"), now)
             elif src["type"] == "gangan":
@@ -484,6 +591,13 @@ def collect(now: datetime, fetch=get):
         health.append(h)
         time.sleep(1)  # 相手のサーバーに負担をかけないよう間隔をあける
 
+    # 手動で登録した更新（自動取得できないサイト用）
+    m_items = load_manual(now)
+    if m_items:
+        all_items += m_items
+        health.append({"key": "manual", "name": "手動登録", "status": "ok", "count": len(m_items),
+                       "latest": max(i["date"] for i in m_items), "message": ""})
+
     # 同じURLが複数の取得元にあれば「無料」を優先
     merged: dict[str, dict] = {}
     for it in all_items:
@@ -495,6 +609,9 @@ def collect(now: datetime, fetch=get):
                 it["author"] = cur["author"]
             merged[it["url"]] = it
     items = sorted(merged.values(), key=lambda i: i["date"], reverse=True)
+    if not PUBLISHER_IMAGES:
+        for i in items:
+            i["img"] = ""
     return items, health
 
 
@@ -526,6 +643,14 @@ def render(items, health, now: datetime) -> None:
 def main() -> int:
     now = datetime.now(JST)
     items, health = collect(now)
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import rakuten
+        items, cache = rakuten.enrich(items, now.timestamp())
+        (ROOT / "site").mkdir(exist_ok=True)
+        (ROOT / "site" / "rakuten_cache.json").write_text(json.dumps(cache, ensure_ascii=False), encoding="utf-8")
+    except Exception:
+        traceback.print_exc()
     render(items, health, now)
     notify(health)
     # 未対応サイトの診断：survey_targets.json があり、手動実行（Run workflow）のときだけ
